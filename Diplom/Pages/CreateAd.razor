@@ -1,0 +1,307 @@
+﻿@page "/createad"
+
+@using Diplom.Data
+@using Diplom.Pages.Shared
+@using System.Security.Claims
+@using Helper.Notification
+
+@inject IJSRuntime JSRuntime
+@inject CreateAdService AdService
+@inject NavigationManager Navigation
+
+<PageTitle>Создание объявления</PageTitle>
+
+<section>
+    <div class="uk-container uk-container-small">
+        <div class="uk-background-muted uk-padding uk-panel uk-text-center">
+            <EditForm class="uk-form-horizontal uk-margin-small" name="create-ad" enctype="multipart/form-data"
+                      Model="adViewModel" OnValidSubmit="@HandleValidSubmit">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+                @*                <form class="uk-form-horizontal uk-margin-small" name="create-ad"
+                enctype="multipart/form-data">*@
+                <div class="uk-margin">
+                    <label class="uk-form-label" for="name">Кличка животного</label>
+                    <div class="uk-form-controls">
+                        <InputText class="uk-input" id="name" name="name" type="text" @bind-Value=adViewModel.Name
+                                   placeholder="Кличка животного" required></InputText>
+                    </div>
+                </div>
+                <div class="uk-margin">
+                    <label class="uk-form-label" for="kindofanimals">Вид животного</label>
+                    <div class="uk-form-controls">
+                        <div class="uk-margin">
+                            @if (_newAdViewModel is not null)
+                            {
+                                <RadzenSelectBar @bind-Value=@adViewModel.KindOfAnimal TValue="Guid" Change="ChangedKind">
+                                    <Items>
+                                        @foreach (var kind in _newAdViewModel.KindOfAnimals)
+                                        {
+                                            <RadzenSelectBarItem Text="@kind.KindName" Value="@kind.Guid" />
+                                        }
+                                    </Items>
+                                </RadzenSelectBar>
+                            }
+                        </div>
+                        <div class="uk-margin">
+                            @if (_isOtherKind)
+                            {
+                                <InputText class="uk-input" id="otherkind" type="text"
+                                       placeholder="Другой вид животного"
+                                       name="otherkind"
+                                       @bind-Value=@adViewModel.OtherKind
+                                       required="@_isOtherKind" />
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="uk-margin">
+                    <label class="uk-form-label" for="colorofanimals">Окрас животного</label>
+                    <div class="uk-form-controls">
+                        <InputSelect @bind-Value=adViewModel.Color
+                                     class="uk-select" id="colorofanimals" name="color" TValue="Guid" required>
+                            @if (_newAdViewModel is not null)
+                            {
+                                foreach (var color in _newAdViewModel.ColorOfAnimals)
+                                {
+                                    <option value="@color.Guid">@color.ColorName</option>
+                                }
+                            }
+                        </InputSelect>
+                        @if (_isOtherColor)
+                        {
+                            <InputText @bind-Value=adViewModel.OtherColor class="uk-input" id="othercolor" type="text"
+                                   placeholder="Другой окрас животного"
+                                   name="othercolor"
+                                   required="@_isOtherColor">
+                            </InputText>
+                        }
+                    </div>
+                </div>
+                <div class="uk-margin">
+                    <div class="uk-form-label">Пол животного</div>
+                    <div class="uk-form-controls uk-form-controls-text">
+                        <InputSelectEnum class="uk-select" @bind-Value=adViewModel.SexAnimal />
+                        @*                        <InputRadioGroup lass="uk-radio" type="radio"
+                        name="sexanimal" @bind-Value=adViewModel.SexAnimal required>
+                        @foreach (var item in Enum.GetValues<SexAnimal>())
+                        {
+                        <label>  <InputRadio Value="@item" />@item                         </label>
+                        }
+                        </InputRadioGroup>*@
+                    </div>
+                </div>
+                <div class="uk-margin">
+                    <label class="uk-form-label" for="caption">Заголовок</label>
+                    <div class="uk-form-controls">
+                        <InputText @bind-Value=adViewModel.Caption class="uk-input"
+                                   id="caption" name="caption" type="text" placeholder="Заголовок" required />
+                    </div>
+                </div>
+                <div class="uk-margin">
+                    <label class="uk-form-label" for="description">Описание</label>
+                    <div class="uk-form-controls">
+                        <RadzenTextArea @bind-Value=adViewModel.Description Class="uk-input w-100"
+                                        id="description" name="description" type="text" Placeholder="Описание" required />
+                    </div>
+                </div>
+                <div class="uk-margin">
+                    <div class="uk-form-label">Тип объявление</div>
+                    <div class="uk-form-controls uk-form-controls-text">
+                        <InputSelectEnum class="uk-select" @bind-Value=adViewModel.TypeAd />
+                    </div>
+                </div>
+                <div class="uk-margin">
+                    @if (hasErrors)
+                    {
+                        <h4 class="mb-4">Manual Upload</h4>
+                        <RadzenUpload @ref="_upload" Auto="false" Multiple="true" Url="@Url()" Change=@(args => OnChange(args, "Manual Upload"))
+                                  Progress=@(args => OnProgress(args, "Manual Upload")) Complete="@OnComplete" class="w-100" />
+                        <RadzenButton Text="Upload" Click=@(args => _upload.Upload()) class="d-block mt-4" />
+                    }
+                    else
+                    {
+                        <p class="uk-text-success">Успешно загружено</p>
+                    }
+
+                </div>
+                <div class="uk-margin">
+                    <input class="uk-input" type="text" name="address" id="address"
+                           placeholder="Кликните по карте, чтобы узнать адрес" readonly required />
+                    <div id="map" style="width: 820px; height: 600px"></div>
+                    <InputText @bind-Value=@adViewModel.Latitude class="uk-input" type="text" name="latitude" id="latitude" readonly required />
+                    <InputText @bind-Value=@adViewModel.Longitude class="uk-input" type="text" name="longitude" id="longitude" readonly required />
+                </div>
+                <div class="uk-margin">
+                    <input class="uk-input uk-button uk-button-default uk-width-1-3" type="submit" />
+                    <input @onclick="@(arg => hasErrors = true )"
+                           class="uk-input uk-button uk-button-default uk-width-1-3" type="reset" />
+                </div>
+                @*                </form>*@
+            </EditForm>
+        </div>
+    </div>
+</section>
+
+<EventConsole @ref=@_console Class="mt-4" />
+
+@code {
+    private NewAdViewModel _newAdViewModel;
+    private EventConsole _console;
+    private RadzenUpload _upload;
+    private ClaimsPrincipal _user;
+    private EditContext editContext;
+
+    private bool _isOtherColor = false;
+    private bool _isOtherKind = false;
+    private bool hasErrors = true;
+
+    private AdViewModel adViewModel = new AdViewModel();
+
+    public Guid KindOfAnimal
+    {
+        get => adViewModel.KindOfAnimal;
+        set
+        {
+            adViewModel.KindOfAnimal = value;
+            ChangedKind(value);
+        }
+    }
+
+    public Guid ColorOfAnimal
+    {
+        get => adViewModel.Color;
+        set
+        {
+            adViewModel.Color = value;
+            ChangedColor(value);
+        }
+    }
+
+    private void OnClickMap(MouseEventArgs args)
+    {
+        var test = JSRuntime.InvokeAsync<object>("YMapsMathods.getLongitude");
+        adViewModel.Longitude = test.Result.ToString();
+    }
+
+    [CascadingParameter]
+    private Task<AuthenticationState> AuthenticationStateTask { get; set; }
+
+    private string Url()
+    {
+        return _user is null ? String.Empty : "https://localhost:7155/api/ads/uploadfiles/" + '{' + _user.Identity.Name + '}';
+    }
+
+    protected override void OnInitialized()
+    {
+        editContext = new(adViewModel);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _newAdViewModel = await AdService.OnInitialized();
+
+        var authState = await AuthenticationStateTask;
+        _user = authState.User;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JSRuntime.InvokeAsync<object>("YMapsMathods.createAdMap");
+        }
+    }
+
+    private async Task<string[]> OnClickMap()
+    {
+        var test = await JSRuntime.InvokeAsync<string>("YMapsMathods.getLongitude");
+        return test.Split('|');
+    }
+
+    private void OnLoad(ChangeEventArgs eventArgs)
+    {
+
+    }
+
+    private void ChangedKind(Guid guid)
+    {
+        _isOtherKind = Guids.OtherKindGuid == guid;
+        adViewModel.KindOfAnimal = guid;
+    }
+
+    private void ChangedColor(Guid guid)
+    {
+        _isOtherColor = Guids.OtherColorGuid == guid;
+        adViewModel.Color = guid;
+    }
+
+
+    #region UploadFiles
+
+    private void OnChange(UploadChangeEventArgs args, string name)
+    {
+        foreach (var file in args.Files)
+        {
+            _console.Log($"File: {file.Name} / {file.Size} bytes");
+        }
+
+        _console.Log($"{name} changed");
+    }
+
+    private void OnProgress(UploadProgressArgs args, string name)
+    {
+        _console.Log($"{args.Progress}% '{name}' / {args.Loaded} of {args.Total} bytes.");
+
+        if (args.Progress == 100)
+        {
+            foreach (var file in args.Files)
+            {
+                _console.Log($"Uploaded: {file.Name} / {file.Size} bytes");
+            }
+        }
+    }
+
+    private async void OnComplete(UploadCompleteEventArgs args)
+    {
+        _console.Log($"Server response: {args.RawResponse}");
+        hasErrors = !String.IsNullOrWhiteSpace(args.RawResponse);
+
+        if (hasErrors)
+            SendNotification(args.RawResponse, NotificationStatus.Status.Danger);
+        else
+            SendNotification("Фотографии успешно загружены", NotificationStatus.Status.Success);
+    }
+
+    private async void SendNotification(string message, NotificationStatus.Status status)
+    {
+        await JSRuntime.InvokeVoidAsync("UIKitMethods.notification", message, NotificationStatus.GetStatus(status));
+    }
+
+    private async void HandleValidSubmit()
+    {
+        if (adViewModel.KindOfAnimal == Guid.Empty)
+            throw new Exception("Не задан тип животного");
+
+        if (adViewModel.Color == Guid.Empty)
+            throw new Exception("Не задан цвет");
+
+        string[] t = await OnClickMap();
+        adViewModel.Latitude = t[0];
+        adViewModel.Longitude = t[1];
+
+        bool isCreated = await AdService.CreateAd(adViewModel, _user);
+
+        if (!isCreated)
+        {
+            SendNotification("Возникла ошибка при создании объявления", NotificationStatus.Status.Danger);
+            return;
+        }
+
+        SendNotification("Объявление успешно создано", NotificationStatus.Status.Success);
+        Navigation.NavigateTo("/index");
+        // Process the valid form
+    }
+    #endregion
+}
+

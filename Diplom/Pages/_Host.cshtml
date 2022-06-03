@@ -1,0 +1,262 @@
+﻿@page "/"
+@namespace Diplom.Pages
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Xsrf
+@{
+    Layout = "_Layout";
+
+}
+
+<component type="typeof(App)" render-mode="ServerPrerendered" />
+
+
+<script>
+
+    let longitude = "";
+    let latitude = "";
+    let myMap;
+
+    window.YMapsMathods =
+    {
+        createAdMap: function () {
+
+            ymaps.ready(init);
+            function init() {
+                var myPlacemark;
+                var myMap;
+                var location = ymaps.geolocation.get();
+                ymaps.geolocation.get().then(function (res) {
+                    var mapContainer = $('#map'),
+                        bounds = res.geoObjects.get(0).properties.get('boundedBy'),
+                        // Рассчитываем видимую область для текущей положения пользователя.
+                        mapState = ymaps.util.bounds.getCenterAndZoom(
+                            bounds,
+                            [mapContainer.width(), mapContainer.height()]
+                        );
+                    createMap(mapState);
+                }, function (e) {
+                    // Если местоположение невозможно получить, то просто создаем карту.
+                    createMap({
+                        center: [55.751574, 37.573856],
+                        zoom: 2
+                    });
+                });
+
+                function createMap(state) {
+                    myMap = new ymaps.Map('map', state);
+
+                    // Слушаем клик на карте.
+                    myMap.events.add('click', function (e) {
+                        var coords = e.get('coords');
+
+                        // Если метка уже создана – просто передвигаем ее.
+                        if (myPlacemark) {
+                            myPlacemark.geometry.setCoordinates(coords);
+                        }
+                        // Если нет – создаем.
+                        else {
+                            myPlacemark = createPlacemark(coords);
+                            myMap.geoObjects.add(myPlacemark);
+                            // Слушаем событие окончания перетаскивания на метке.
+                            myPlacemark.events.add('dragend', function () {
+                                getAddress(myPlacemark.geometry.getCoordinates());
+                            });
+                        }
+                        getAddress(coords);
+                    });
+                }
+
+                // Создание метки.
+                function createPlacemark(coords) {
+                    return new ymaps.Placemark(coords, {
+                        iconCaption: 'поиск...'
+                    }, {
+                        preset: 'islands#violetDotIconWithCaption',
+                        draggable: true
+                    });
+                }
+
+                // Определяем адрес по координатам (обратное геокодирование).
+                function getAddress(coords) {
+                    myPlacemark.properties.set('iconCaption', 'поиск...');
+                    ymaps.geocode(coords).then(function (res) {
+                        let coordinates = res.metaData.geocoder.request.split(',');
+                        var firstGeoObject = res.geoObjects.get(0),
+                            address = firstGeoObject.getAddressLine();
+
+                        myPlacemark.properties
+                            .set({
+                                // Формируем строку с данными об объекте.
+                                iconCaption: [
+                                    // Название населенного пункта или вышестоящее административно-территориальное образование.
+                                    firstGeoObject.getLocalities().length ? firstGeoObject.getLocalities() : firstGeoObject.getAdministrativeAreas(),
+                                    // Получаем путь до топонима, если метод вернул null, запрашиваем наименование здания.
+                                    firstGeoObject.getThoroughfare() || firstGeoObject.getPremise()
+                                ].filter(Boolean).join(', '),
+                                // В качестве контента балуна задаем строку с адресом объекта.
+                                balloonContent: address
+                            });
+                        let form = document.forms["create-ad"];
+
+                        form.elements.address.value = address;
+                        form.elements.latitude.value = coordinates[0];
+                        form.elements.longitude.value = coordinates[1];
+
+                        longitude = coordinates[1];
+                        latitude = coordinates[0];
+                        //DotNet.invokeMethodAsync('Diplom','UpdateMessageValue', coordinates[1]);
+                    });
+                }
+            }
+        },
+        getLongitude: function () {
+            let coordinate = latitude + ' | ' + longitude;
+            return coordinate;
+        },
+        adsMap: function () {
+            ymaps.ready(init);
+            function init() {
+                var myPlacemark;
+                var location = ymaps.geolocation.get();
+                ymaps.geolocation.get().then(function (res) {
+                    var mapContainer = $('#map'),
+                        bounds = res.geoObjects.get(0).properties.get('boundedBy'),
+                        // Рассчитываем видимую область для текущей положения пользователя.
+                        mapState = ymaps.util.bounds.getCenterAndZoom(
+                            bounds,
+                            [mapContainer.width(), mapContainer.height()]
+                        );
+                    createMap(mapState);
+                }, function (e) {
+                    // Если местоположение невозможно получить, то просто создаем карту.
+                    createMap({
+                        center: [55.751574, 37.573856],
+                        zoom: 2
+                    });
+                });
+
+                function createMap(state) {
+                    myMap = new ymaps.Map('map', state);
+
+                    $(function () {
+                        let objects = [];
+                        objectManager = new ymaps.ObjectManager({
+                            clusterize: true,
+                            gridSize: 32,
+                            clusterDisableClickZoom: true
+                        });
+                        let list = $('#ad-photo-list').children();
+                        for (var i = 0; i < list.length; i++) {
+                            let latitude = list[i].getAttribute("data-latitude");
+                            let longitude = list[i].getAttribute("data-longitude");
+                            let dataKindOfAnimal = '/icons/' + list[i].getAttribute("data-kind-of-animal");
+                            let id = list[i].getAttribute("data-id");
+                            let coordinates = {
+                                latitude: latitude,
+                                longitude: longitude,
+                            };
+
+                            setPlaceHolders(coordinates, dataKindOfAnimal, id, objects);
+                        }
+                        objectManager.add(objects);
+                        myMap.geoObjects.add(objectManager);
+                    })
+                }
+            }
+
+            function setPlaceHolders(coordinates, dataKindOfAnimal, id, objects) {
+                objects.push({
+                    type: 'Feature',
+                    id: id,
+                    geometry: {
+                        type: 'Point',
+                        coordinates: [coordinates.latitude, coordinates.longitude]
+                    },
+                    options: {
+                        iconLayout: 'default#image',
+                        iconImageHref: dataKindOfAnimal,
+                        iconImageSize: [30, 42],
+                    }
+                });
+            }
+        },
+        getView: function (lat, lon) {
+            myMap.setCenter([lat, lon], 15, {
+                checkZoomRange: true
+            });
+        },
+
+        getObjectsMap: function () {
+            return objectManager.objects;
+        }
+    };
+
+
+    window.UIKitMethods =
+    {
+        notification: function (message, status) {
+            UIkit.notification(message, status);
+        },
+        dragAndDrop: function () {
+            document.addEventListener("DOMContentLoaded", function (event) {
+
+                var bar = document.getElementById("js-progressbar");
+
+                UIkit.upload(".js-upload", {
+
+                    url: "/home/SaveFiles",
+                    multiple: true,
+                    beforeSend: function () {
+                        console.log("beforeSend", arguments);
+                    },
+                    beforeAll: function () {
+                        console.log("beforeAll", arguments);
+                    },
+                    load: function () {
+                        console.log("load", arguments);
+                    },
+                    error: function () {
+                        console.log("error", arguments);
+                    },
+                    complete: function () {
+                        console.log("complete", arguments);
+                    },
+
+                    loadStart: function (e) {
+                        console.log("loadStart", arguments);
+
+                        bar.removeAttribute("hidden");
+                        bar.max = e.total;
+                        bar.value = e.loaded;
+                    },
+
+                    progress: function (e) {
+                        console.log("progress", arguments);
+
+                        bar.max = e.total;
+                        bar.value = e.loaded;
+                    },
+
+                    loadEnd: function (e) {
+                        console.log("loadEnd", arguments);
+
+                        bar.max = e.total;
+                        bar.value = e.loaded;
+                    },
+
+                    completeAll: function () {
+                        console.log("completeAll", arguments);
+
+                        setTimeout(function () {
+                            bar.setAttribute("hidden", "hidden");
+                        }, 1000);
+
+                        UIkit.modal.alert('Загрузка завершена!');
+                    }
+
+                });
+
+            });
+        },
+    };
+</script>

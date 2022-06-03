@@ -1,0 +1,165 @@
+﻿@page "/adsmap"
+
+@using Diplom.Data
+
+@inject IJSRuntime JSRuntime
+@inject AdsMapService AdsService
+@inject DialogService DialogService
+
+<h3>AdsMap</h3>
+
+<section>
+    <div class="uk-container uk-container-xlarge">
+        <div class="uk-background-muted uk-padding uk-panel uk-text-center">
+            <div class="uk-flex-middle" uk-grid>
+                <div class="uk-width-1-3@m uk-flex-first list-cards" uk-scrollspy="target: > div; cls: uk-animation-fade; delay: 500">
+                    <ul class="uk-list" id="ad-photo-list">
+                        @for (int i = 0; i < _ads.Count; i++)
+                        {
+                            var ad = _ads[i];
+
+                            <li data-kind-of-animal="@GetIconKindOfAnimal(ad.Animal.KindOfAnimalGuid)"
+                            data-latitude="@ad.Coordinates.Latitude.ToString().Replace(',', '.')"
+                            data-longitude="@ad.Coordinates.Longitude.ToString().Replace(',', '.')"
+                            data-id="@i">
+                                <div class="uk-card uk-card-default uk-width-1-1@m">
+                                    <div class="uk-card-header">
+                                        <div class="uk-grid-small uk-flex-middle" uk-grid>
+                                            <div class="uk-width-auto">
+                                                <div class="uk-position-relative uk-visible-toggle uk-light" tabindex="-1"
+                                                 uk-slider="center: true">
+                                                    <ul class="uk-slider-items uk-grid">
+                                                        @foreach (var photo in ad.Photo)
+                                                        {
+                                                            <li class="uk-width-3-4">
+                                                                <div class="uk-panel">
+                                                                    <img src="data:image/jpeg;base64,@(Convert.ToBase64String(photo.ImageHash))" width="900" height="600"
+                                                                 alt="Слайдер" loading="lazy">
+                                                                    <div class="uk-position-center uk-panel">
+                                                                        <div class="uk-h1"></div>
+                                                                    </div>
+                                                                </div>
+                                                            </li>
+                                                        }
+                                                    </ul>
+                                                    <a class="uk-position-center-left uk-position-small uk-hidden-hover"
+                                                   href="#" uk-slidenav-previous uk-slider-item="previous"></a>
+                                                    <a class="uk-position-center-right uk-position-small uk-hidden-hover"
+                                                   href="#" uk-slidenav-next uk-slider-item="next"></a>
+                                                </div>
+                                            </div>
+                                            <div class="uk-width-expand">
+                                                <h3 class="uk-card-title uk-margin-remove-bottom">@ad.Description</h3>
+                                                <p class="uk-text-meta uk-margin-remove-top">
+                                                    <time datetime="2019-10-12T19:00">@ad.DateCreate</time>
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="uk-card-body">
+                                        <p>
+                                            @ad.Description
+                                        </p>
+                                    </div>
+                                    <div class="uk-card-footer">
+                                        <div class="uk-flex uk-flex-around">
+                                            <div class="uk-card uk-card-default uk-card-body">
+                                                <button @onclick="() => OpenOrder(ad)" class="uk-button uk-button-text uk-button-primary"
+                                               >Подробнее</button>
+                                            </div>
+                                            <div class="uk-card uk-card-default uk-card-body uk-margin-left">
+                                                <button @onclick="() => FocusPlacemarket(ad.Coordinates)" data-id="@i" class="uk-button uk-button-text">Показать на карте</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                        }
+                    </ul>
+                </div>
+                <div class="uk-width-2-3@m">
+                    <div id="map" style="width: 1000px; height: 900px"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</section>
+
+@code {
+    List<Ad> _ads = new List<Ad>();
+    bool needRender = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var gotAds = await AdsService.GetAds();
+        _ads.AddRange(gotAds);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_ads.Count > 0 && needRender)
+            await JSRuntime.InvokeAsync<object>("YMapsMathods.adsMap");
+    }
+
+    private string GetIconKindOfAnimal(Guid guid) => guid switch
+    {
+        var r when (r == Guids.CatGuid) => "cat.gif",
+        var r when (r == Guids.DogGuid) => "dog.gif",
+        var r when (r == Guids.BirdGuid) => "bird.gif",
+        _ => "other.gif"
+    };
+
+
+    private async void SetPlace()
+    {
+        await JSRuntime.InvokeVoidAsync("YMapsMathods.adsMap.setPlaceHolders");
+    }
+
+    private async void FocusPlacemarket(AdCoordinates coordinates)
+    {
+        needRender = false;
+        await JSRuntime.InvokeVoidAsync("YMapsMathods.getView", coordinates.Latitude, coordinates.Longitude);
+    }
+
+    protected override void OnInitialized()
+    {
+        DialogService.OnOpen += Open;
+        DialogService.OnClose += Close;
+    }
+
+    public void Dispose()
+    {
+        // The DialogService is a singleton so it is advisable to unsubscribe.
+        DialogService.OnOpen -= Open;
+        DialogService.OnClose -= Close;
+    }
+
+    void Open(string title, Type type, Dictionary<string, object> parameters, DialogOptions options)
+    {
+        needRender = false;
+        //if (!parameters.TryGetValue("Ad", out object @object))
+        //    return;
+
+        //var ad = @object as Ad;
+        //var path = $"{Directory.GetCurrentDirectory()}/files/{ad.Guid}/";
+
+        //ImageHelper.SaveImage(ad.Photo.Select(p => p.ImageHash).ToList(), path);
+
+        //parameters.Add("path", path);
+    }
+
+    void Close(dynamic result)
+    {
+        needRender = false;
+    }
+
+    public async Task OpenOrder(Ad ad)
+    {
+        await DialogService.OpenAsync<AdDialogInfo>("Test",
+               new Dictionary<string, object>() { { "Ad", ad } },
+               new DialogOptions() { Width = "100%", Height = "100%",
+               Style = "max-width: 100%; max-height: 100%; min-width: 70%; min-height: 70%; ",
+               Resizable = true, Draggable = true });
+    }
+}

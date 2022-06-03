@@ -1,0 +1,9 @@
+.list-cards {
+    max-height: 900px;
+    overflow-y: scroll;
+}
+
+.uk-modal-dialog-login {
+    width: 250px;
+    padding: 25px;
+}
