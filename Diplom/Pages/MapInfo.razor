@@ -1,0 +1,17 @@
+﻿@using System.Text
+@inject Radzen.DialogService dialogService
+@inject IJSRuntime JSRuntime
+
+<div id="map" style="width: 700px; height: 570px"></div>
+
+@code {
+    [Parameter] public string Latitude { get; set; }
+    [Parameter] public string Longitude { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        var sb = new StringBuilder();
+        sb.Append('[').Append(Latitude).Append(", ").Append(Longitude).Append(']');
+        await JSRuntime.InvokeAsync<object>("YMapsMathods.mapInfo", sb.ToString());
+    }
+}

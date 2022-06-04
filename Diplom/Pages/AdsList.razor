@@ -1,0 +1,100 @@
+﻿@page "/adslist"
+
+@using Diplom.Data
+
+@inject AdsMapService AdsService
+@inject FilterAdsService FilterService
+@inject DialogService DialogService
+
+<h3>AdsList</h3>
+@if (_ads.Any())
+{
+    <RadzenDataGrid AllowFiltering="true" AllowColumnResize="true"
+                FilterMode="FilterMode.Advanced" PageSize="5" AllowPaging="true" AllowSorting="true"
+                Data="@_adsViewModel"
+                TItem="ListAdViewModel" ColumnWidth="300px"
+                FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                LogicalFilterOperator="LogicalFilterOperator.Or">
+        <Columns>
+            <RadzenDataGridColumn TItem="ListAdViewModel" Property="Name" Title="Name" />
+            <RadzenDataGridColumn TItem="ListAdViewModel" Property="Description" Title="Description" Width="150px" />
+            <RadzenDataGridColumn TItem="ListAdViewModel" Property="TypeAd" Title="TypeAd" FilterValue="@_currentTypeAd">
+                <FilterTemplate>
+                    <RadzenDropDown @bind-Value="@_currentTypeAd" TextProperty="Text" ValueProperty="Value" Style="width:100%;"
+                                Data="@(Enum.GetValues(typeof(TypeAd)).Cast<TypeAd?>()
+                                    .Select(t => new { Text = $"{t}", Value = t == TypeAd.All ? null : t }))" />
+                </FilterTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="ListAdViewModel" Property="DateCreate" Title="DateCreate" />
+            <RadzenDataGridColumn TItem="ListAdViewModel" Property="KindAnimal" Title="KindAnimal" />
+            <RadzenDataGridColumn TItem="ListAdViewModel" Property="OtherKind" Title="OtherKind" />
+            <RadzenDataGridColumn TItem="ListAdViewModel" Property="Color" Title="Color" />
+            <RadzenDataGridColumn TItem="ListAdViewModel" Property="OtherColor" Title="OtherColor" />
+            <RadzenDataGridColumn TItem="ListAdViewModel" Property="Name" Title="Name" />
+            <RadzenDataGridColumn TItem="ListAdViewModel" Title="Latitude">
+                <Template Context="ad">
+                    <RadzenButton ButtonStyle="ButtonStyle.Info" Icon="info" Class="m-1" Click=@(() => OpenOrder(ad.Guid)) />
+                </Template>
+            </RadzenDataGridColumn>
+        </Columns>
+    </RadzenDataGrid>
+}
+@code {
+    List<Ad> _ads = new List<Ad>();
+    IQueryable<Ad> _queryAds;
+    List<ListAdViewModel> _adsViewModel;
+
+    TypeAd? _currentTypeAd;
+    KindOfAnimal? _currentKind;
+    string _name;
+    NewAdViewModel _newAdViewModel;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _newAdViewModel = await FilterService.OnInitialized();
+
+        _queryAds = await AdsService.GetAds();
+        GetAdViewModels();
+        _ads.AddRange(_queryAds);
+    }
+
+    private List<ListAdViewModel> GetAdViewModels()
+    {
+        _adsViewModel = new List<ListAdViewModel>();
+        foreach (var ad in _queryAds)
+        {
+            var kind = _newAdViewModel.KindOfAnimals.FirstOrDefault(koa => koa.Guid == ad.Animal.KindOfAnimalGuid);
+            var color = _newAdViewModel.ColorOfAnimals.FirstOrDefault(coa => coa.Guid == ad.Animal.ColorOfAnimalGuid);
+            _adsViewModel.Add(new ListAdViewModel()
+                {
+                    Caption = ad.Name,
+                    Description = ad.Description,
+                    Guid = ad.Guid,
+                    UserGuid = ad.UserGuid,
+                    Latitude = ad.Coordinates.Latitude.ToString(),
+                    Longitude = ad.Coordinates.Longitude.ToString(),
+                    TypeAd = ad.TypeAd,
+                    Name = ad.Animal.AnimalName,
+                    KindAnimal = kind.KindName,
+                    OtherKind = ad.Animal.OtherKindOfAnimal,
+                    Color = color.ColorName,
+                    OtherColor = ad.Animal.OtherColorOfAnimal,
+                    DateCreate = ad.DateCreate
+                });
+        }
+
+        return _adsViewModel;
+
+    }
+
+    async Task OpenOrder(Guid guid)
+    {
+        var ad = _ads.Find(a => a.Guid == guid);
+        await DialogService.OpenAsync<MapInfo>($"Order {ad.Name}",
+              new Dictionary<string, object>() {
+                  { "Latitude", ad.Coordinates.Latitude.ToString() },
+                  { "Longitude", ad.Coordinates.Longitude.ToString() },
+              },
+              new DialogOptions() { Width = "700px", Height = "570px" });
+    }
+}

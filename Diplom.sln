@@ -13,7 +13,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ads", "Ads\Ads.csproj", "{7
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AnimalManagement", "AnimalManagement\AnimalManagement.csproj", "{3D497BFF-92F4-4EE2-9FBA-8BCE9E91AD51}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Datebase", "Datebase\Datebase.csproj", "{061450F8-09AF-4B19-AC2F-BFFED0A2C731}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DatabaseContext", "Datebase\DatabaseContext.csproj", "{061450F8-09AF-4B19-AC2F-BFFED0A2C731}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SelectionAds", "SelectionAds\SelectionAds.csproj", "{2220F491-BDF7-4C11-BCE9-54A50415B68A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -45,6 +47,10 @@ Global
 		{061450F8-09AF-4B19-AC2F-BFFED0A2C731}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{061450F8-09AF-4B19-AC2F-BFFED0A2C731}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{061450F8-09AF-4B19-AC2F-BFFED0A2C731}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2220F491-BDF7-4C11-BCE9-54A50415B68A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2220F491-BDF7-4C11-BCE9-54A50415B68A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2220F491-BDF7-4C11-BCE9-54A50415B68A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2220F491-BDF7-4C11-BCE9-54A50415B68A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
