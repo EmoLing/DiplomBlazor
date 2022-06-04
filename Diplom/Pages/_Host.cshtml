@@ -15,6 +15,7 @@
     let longitude = "";
     let latitude = "";
     let myMap;
+    let _dotNetHelper;
 
     window.YMapsMathods =
     {
@@ -113,10 +114,11 @@
             let coordinate = latitude + ' | ' + longitude;
             return coordinate;
         },
-        adsMap: function () {
+        adsMap: function (dotNetHelper) {
             ymaps.ready(init);
             function init() {
                 var myPlacemark;
+                _dotNetHelper = dotNetHelper;
                 var location = ymaps.geolocation.get();
                 ymaps.geolocation.get().then(function (res) {
                     var mapContainer = $('#map'),
@@ -159,6 +161,12 @@
                             setPlaceHolders(coordinates, dataKindOfAnimal, id, objects);
                         }
                         objectManager.add(objects);
+
+                        objectManager.objects.events.add('click', function (e) {
+                            var objectId = e.get('objectId');
+                            _dotNetHelper.invokeMethodAsync('GetHelloMessage', objectId)
+                        });
+
                         myMap.geoObjects.add(objectManager);
                     })
                 }
@@ -181,16 +189,44 @@
             }
         },
         getView: function (lat, lon) {
-            myMap.setCenter([lat, lon], 15, {
+            myMap.setCenter([lat, lon], 20, {
                 checkZoomRange: true
             });
         },
 
-        getObjectsMap: function () {
-            return objectManager.objects;
-        }
-    };
+        setDotNetHelper: function (dot) {
+            _dotNetHelper = dot;
+        },
 
+        createNewMap: function () {
+
+            ymaps.ready(init);
+            function init() {
+                var myMap;
+                var location = ymaps.geolocation.get();
+                ymaps.geolocation.get().then(function (res) {
+                    var mapContainer = $('#map'),
+                        bounds = res.geoObjects.get(0).properties.get('boundedBy'),
+                        // Рассчитываем видимую область для текущей положения пользователя.
+                        mapState = ymaps.util.bounds.getCenterAndZoom(
+                            bounds,
+                            [mapContainer.width(), mapContainer.height()]
+                        );
+                    createMap(mapState);
+                }, function (e) {
+                    // Если местоположение невозможно получить, то просто создаем карту.
+                    createMap({
+                        center: [55.751574, 37.573856],
+                        zoom: 2
+                    });
+                });
+
+                function createMap(state) {
+                    myMap = new ymaps.Map('map', state);
+                }
+            }
+        },
+    };
 
     window.UIKitMethods =
     {

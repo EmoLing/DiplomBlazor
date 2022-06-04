@@ -1,16 +1,34 @@
 ﻿@page "/adsmap"
 
 @using Diplom.Data
+@using System.Dynamic;
 
 @inject IJSRuntime JSRuntime
 @inject AdsMapService AdsService
 @inject DialogService DialogService
-
-<h3>AdsMap</h3>
+@inject Microsoft.AspNetCore.Hosting.IWebHostEnvironment HostEnvironment
 
 <section>
     <div class="uk-container uk-container-xlarge">
         <div class="uk-background-muted uk-padding uk-panel uk-text-center">
+            <div class="uk-margin">
+                <div class="uk-flex">
+                    <div class="uk-card uk-card-default uk-card-body">
+                        <button @onclick="() => OpenFilter()" class="uk-button  uk-button-text">
+                            Фильтр
+                        </button>
+                    </div>
+                    @if (_haveFilter)
+                    {
+                        <div class="uk-card uk-card-default uk-card-body uk-margin-left">
+                            <button @onclick="() => ClearFilter()" class="uk-button  uk-button-text">
+                                Сброс
+                            </button>
+                        </div>
+                    }
+
+                </div>
+            </div>
             <div class="uk-flex-middle" uk-grid>
                 <div class="uk-width-1-3@m uk-flex-first list-cards" uk-scrollspy="target: > div; cls: uk-animation-fade; delay: 500">
                     <ul class="uk-list" id="ad-photo-list">
@@ -21,7 +39,7 @@
                             <li data-kind-of-animal="@GetIconKindOfAnimal(ad.Animal.KindOfAnimalGuid)"
                             data-latitude="@ad.Coordinates.Latitude.ToString().Replace(',', '.')"
                             data-longitude="@ad.Coordinates.Longitude.ToString().Replace(',', '.')"
-                            data-id="@i">
+                            data-id="@ad.Guid">
                                 <div class="uk-card uk-card-default uk-width-1-1@m">
                                     <div class="uk-card-header">
                                         <div class="uk-grid-small uk-flex-middle" uk-grid>
@@ -49,7 +67,7 @@
                                                 </div>
                                             </div>
                                             <div class="uk-width-expand">
-                                                <h3 class="uk-card-title uk-margin-remove-bottom">@ad.Description</h3>
+                                                <h3 class="uk-card-title uk-margin-remove-bottom">@ad.Name</h3>
                                                 <p class="uk-text-meta uk-margin-remove-top">
                                                     <time datetime="2019-10-12T19:00">@ad.DateCreate</time>
                                                 </p>
@@ -64,8 +82,9 @@
                                     <div class="uk-card-footer">
                                         <div class="uk-flex uk-flex-around">
                                             <div class="uk-card uk-card-default uk-card-body">
-                                                <button @onclick="() => OpenOrder(ad)" class="uk-button uk-button-text uk-button-primary"
-                                               >Подробнее</button>
+                                                <button @onclick="() => OpenOrder(ad)" class="uk-button uk-button-text">
+                                                    Подробнее
+                                                </button>
                                             </div>
                                             <div class="uk-card uk-card-default uk-card-body uk-margin-left">
                                                 <button @onclick="() => FocusPlacemarket(ad.Coordinates)" data-id="@i" class="uk-button uk-button-text">Показать на карте</button>
@@ -77,9 +96,12 @@
                         }
                     </ul>
                 </div>
-                <div class="uk-width-2-3@m">
-                    <div id="map" style="width: 1000px; height: 900px"></div>
-                </div>
+                @if (_needShowMap)
+                {
+                    <div class="uk-width-2-3@m">
+                        <div id="map" style="width: 1000px; height: 900px"></div>
+                    </div>
+                }
             </div>
         </div>
     </div>
@@ -88,18 +110,47 @@
 
 @code {
     List<Ad> _ads = new List<Ad>();
-    bool needRender = true;
+    IQueryable<Ad> _queryAds;
+    private bool _haveFilter = false;
+    private int _countmap = 0;
+    private bool _needShowMap = false;
+    private bool needRender = true;
+
+    private DotNetObjectReference<AdsMap> objRef;
+
+    [JSInvokable]
+    public async void GetHelloMessage(Guid adGuid)
+    {
+        var ad = _ads.FirstOrDefault(a => a.Guid == adGuid);
+        if (ad is null)
+            return;
+
+        await OpenOrder(ad);
+    }
 
     protected override async Task OnInitializedAsync()
     {
-        var gotAds = await AdsService.GetAds();
-        _ads.AddRange(gotAds);
+        _needShowMap = true;
+        _queryAds = await AdsService.GetAds();
+        _ads.AddRange(_queryAds);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (_ads.Count > 0 && needRender)
-            await JSRuntime.InvokeAsync<object>("YMapsMathods.adsMap");
+        if (firstRender || !needRender || _countmap > 0)
+            return;
+
+
+        _countmap = _countmap + 1;
+        objRef = DotNetObjectReference.Create(this);
+
+        if (_ads.Count > 0)
+            await JSRuntime.InvokeAsync<object>("YMapsMathods.adsMap", objRef);
+        else
+            await JSRuntime.InvokeAsync<object>("YMapsMathods.createNewMap", objRef);
+
+        needRender = false;
+
     }
 
     private string GetIconKindOfAnimal(Guid guid) => guid switch
@@ -138,28 +189,90 @@
     void Open(string title, Type type, Dictionary<string, object> parameters, DialogOptions options)
     {
         needRender = false;
-        //if (!parameters.TryGetValue("Ad", out object @object))
-        //    return;
-
-        //var ad = @object as Ad;
-        //var path = $"{Directory.GetCurrentDirectory()}/files/{ad.Guid}/";
-
-        //ImageHelper.SaveImage(ad.Photo.Select(p => p.ImageHash).ToList(), path);
-
-        //parameters.Add("path", path);
     }
 
-    void Close(dynamic result)
+    async void Close(dynamic result)
     {
-        needRender = false;
+        if (result is not FilterAdsViewModel filterAdsViewModel || (result is bool && !result))
+        {
+            needRender = false;
+            return;
+        }
+
+        await RefreshMap(() =>
+        {
+            var filter = (FilterAdsViewModel)result;
+            var filteredAds = _queryAds.Where(a
+                => (!filter.DisableKind ? filter.KindOfAnimal.Contains(a.Animal.KindOfAnimalGuid) : true)
+                && (!filter.DisableColor ? filter.Color.Contains(a.Animal.ColorOfAnimalGuid) : true)
+                && (!filter.DisableSex ? filter.SexAnimal.Contains(a.Animal.SexAnimal) : true)
+                && (!filter.DisableTypeAd ? filter.TypeAd.Contains(a.TypeAd) : true));
+
+            _ads = filteredAds.Any() ? filteredAds.ToList() : new List<Ad>();
+
+            _haveFilter = true;
+        });
+    }
+
+    private async void ClearFilter()
+    {
+        await RefreshAds();
+        await RefreshMap();
+    }
+
+    private async Task RefreshMap(Action action = null)
+    {
+        needRender = true;
+        _countmap = 0;
+        action?.Invoke();
+        _needShowMap = false;
+        await OnAfterRenderAsync(false);
+
+        _needShowMap = true;
+        StateHasChanged();
+        _countmap = _countmap + 1;
+    }
+
+    private async Task RefreshAds()
+    {
+        _ads.Clear();
+        _queryAds = await AdsService.GetAds();
+        _ads.AddRange(_queryAds);
+
+        _haveFilter = false;
+        needRender = true;
+        _needShowMap = false;
+
+        StateHasChanged();
     }
 
     public async Task OpenOrder(Ad ad)
     {
         await DialogService.OpenAsync<AdDialogInfo>("Test",
                new Dictionary<string, object>() { { "Ad", ad } },
-               new DialogOptions() { Width = "100%", Height = "100%",
+               new DialogOptions()
+                   {
+                       Width = "100%",
+                       Height = "100%",
+                       Style = "max-width: 100%; max-height: 100%; min-width: 70%; min-height: 70%; ",
+                       Resizable = true,
+                       Draggable = true
+                   });
+    }
+
+    public async Task OpenFilter()
+    {
+        await DialogService.OpenAsync<FilterDialog>("Test",
+       new Dictionary<string, object>(),
+       new DialogOptions()
+           {
+               Width = "80%",
+               Height = "80%",
                Style = "max-width: 100%; max-height: 100%; min-width: 70%; min-height: 70%; ",
-               Resizable = true, Draggable = true });
+               Resizable = true,
+               Draggable = false,
+               ShowClose = true,
+               ShowTitle = false
+           });
     }
 }

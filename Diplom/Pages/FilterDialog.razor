@@ -1,0 +1,142 @@
+﻿@using Diplom.Data
+
+@inject Radzen.DialogService dialogService
+@inject FilterAdsService FilterAdsService;
+
+<div class="uk-child-width-expand@s uk-text-center" uk-grid>
+    <div>
+        <div class="uk-card uk-card-default uk-card-body">
+            @if (_newAdViewModel is not null)
+            {
+                <div class="uk-margin">
+                    <h4 class="mt-3">Статус обявления</h4>
+                    <RadzenSwitch Change="(arg) =>
+                {
+                    _filterAdsViewModel.DisableTypeAd = !arg;
+                    if (!arg)
+                        _filterAdsViewModel.TypeAd = new List<TypeAd>();
+                    }" />
+                </div>
+                <div class="uk-margin">
+                    <RadzenCheckBoxList @bind-Value=@_filterAdsViewModel.TypeAd TValue="TypeAd" Disabled=_filterAdsViewModel.DisableTypeAd>
+                        <Items>
+                            <RadzenCheckBoxListItem Text="Пропажа" Value="TypeAd.Loss" />
+                            <RadzenCheckBoxListItem Text="Находка" Value="TypeAd.Find" />
+                        </Items>
+                    </RadzenCheckBoxList>
+
+                </div>
+            }
+        </div>
+    </div>
+    <div>
+        <div class="uk-card uk-card-default uk-card-body">
+            @if (_newAdViewModel is not null)
+            {
+                <div class="uk-margin">
+                    <h4 class="mt-3">Вид животного</h4>
+                    <RadzenSwitch Change="(arg) =>
+                {
+                    _filterAdsViewModel.DisableKind = !arg;
+                    if (!arg)
+                        _filterAdsViewModel.KindOfAnimal = new List<Guid>();
+                    }" />
+                </div>
+                <div class="uk-margin">
+
+                    <RadzenListBox AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                               @bind-Value=@_filterAdsViewModel.KindOfAnimal Multiple="true" Data=@_newAdViewModel.KindOfAnimals
+                               TextProperty="KindName"
+                               ValueProperty="Guid"
+                               Style="height:200px" Class="w-100" Disabled="_filterAdsViewModel.DisableKind" />
+
+                </div>
+            }
+        </div>
+    </div>
+    <div>
+        <div class="uk-card uk-card-default uk-card-body">
+            @if (_newAdViewModel is not null)
+            {
+                <div class="uk-margin">
+                    <h4 class="mt-3">Цвет животного</h4>
+                    <RadzenSwitch Change="(arg) =>
+                {
+                    _filterAdsViewModel.DisableColor = !arg;
+                    if (!arg)
+                        _filterAdsViewModel.Color = new List<Guid>();
+                }" />
+                </div>
+                <div class="uk-margin">
+
+                    <RadzenListBox AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                               @bind-Value=@_filterAdsViewModel.Color Multiple="true" Data=@_newAdViewModel.ColorOfAnimals
+                               TextProperty="ColorName"
+                               ValueProperty="Guid"
+                               Style="height:200px" Class="w-100" Disabled=@_filterAdsViewModel.DisableColor />
+
+                </div>
+            }
+        </div>
+    </div>
+    <div>
+        <div class="uk-card uk-card-default uk-card-body">
+            @if (_newAdViewModel is not null)
+            {
+                <div class="uk-margin">
+                    <h4 class="mt-3">Пол животного</h4>
+                    <RadzenSwitch Change="(arg) =>
+                    {
+                        _filterAdsViewModel.DisableSex = !arg;
+                        if (!arg)
+                            _filterAdsViewModel.SexAnimal = new List<SexAnimal>();
+                    }" />
+                </div>
+                <div class="uk-margin">
+                    <RadzenCheckBoxList @bind-Value=@_filterAdsViewModel.SexAnimal TValue="SexAnimal" Disabled=_filterAdsViewModel.DisableSex>
+                        <Items>
+                            <RadzenCheckBoxListItem Text="М" Value="SexAnimal.Male" />
+                            <RadzenCheckBoxListItem Text="Ж" Value="SexAnimal.Female" />
+                            <RadzenCheckBoxListItem Text="Не могу определить" Value="SexAnimal.Undefined" />
+                        </Items>
+                    </RadzenCheckBoxList>
+
+                </div>
+            }
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12 text-right">
+        <RadzenButton Click="@((args) => dialogService.Close(false))" ButtonStyle="ButtonStyle.Secondary" Text="Cancel" Style="width: 140px" Class="mr-1" />
+        <RadzenButton Click="@((args) => Filtering())" Text="Фильтровать" Style="width: 140px" />
+    </div>
+</div>
+
+@code {
+    private FilterAdsViewModel _filterAdsViewModel;
+    private NewAdViewModel _newAdViewModel;
+    private bool _disableKind;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _newAdViewModel = await FilterAdsService.OnInitialized();
+        _filterAdsViewModel = new FilterAdsViewModel()
+            {
+                KindOfAnimal = new List<Guid>(),
+                Color = new List<Guid>(),
+                SexAnimal = new List<SexAnimal>(),
+                TypeAd = new List<TypeAd>()
+            };
+    }
+
+    private void Filtering()
+    {
+        _filterAdsViewModel.KindOfAnimal ??= new List<Guid>();
+        _filterAdsViewModel.Color ??= new List<Guid>();
+        _filterAdsViewModel.SexAnimal ??= new List<SexAnimal>();
+        _filterAdsViewModel.TypeAd ??= new List<TypeAd>();
+
+        dialogService.Close(_filterAdsViewModel);
+    }
+}

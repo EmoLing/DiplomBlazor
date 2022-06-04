@@ -33,7 +33,11 @@ namespace Ads.DbContexts
             modelBuilder.Entity<AdCoordinates>().HasKey(a => a.AdGuid);
             modelBuilder.Entity<Image>().HasKey(a => a.Guid);
 
-            modelBuilder.Entity<Animal>().HasKey(a => a.Guid);
+            modelBuilder.Entity<Animal>(a =>
+            {
+                a.HasKey(a => a.Guid);
+                a.Property(p => p.Guid);
+            });
             modelBuilder.Entity<Animal>().HasKey(a => a.AdGuid);
             modelBuilder.Entity<ColorOfAnimal>().HasKey(a => a.Guid);
             modelBuilder.Entity<KindOfAnimal>().HasKey(a => a.Guid);

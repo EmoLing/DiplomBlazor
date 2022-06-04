@@ -54,11 +54,23 @@ namespace AnimalManagement.DbContexts
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Ad>().HasKey(a => a.Guid);
+            modelBuilder.Entity<Ad>(a =>
+            {
+                a.HasKey(a => a.Guid);
+                a.Property(p => p.Guid);
+                a.Property(p => p.TypeAd);
+                a.Property(p => p.UserGuid);
+                a.Property(p => p.StatusAd);
+                a.Property(p => p.DateCreate);
+            });
             modelBuilder.Entity<AdCoordinates>().HasKey(a => a.AdGuid);
             modelBuilder.Entity<Image>().HasKey(a => a.AdGuid);
 
-            modelBuilder.Entity<Animal>().HasKey(a => a.Guid);
+            modelBuilder.Entity<Animal>(a =>
+            {
+                a.HasKey(a => a.Guid);
+                a.Property(p => p.Guid);
+            });
             modelBuilder.Entity<Animal>().HasKey(a => a.AdGuid);
             modelBuilder.Entity<ColorOfAnimal>().HasKey(a => a.Guid);
             modelBuilder.Entity<KindOfAnimal>().HasKey(a => a.Guid);

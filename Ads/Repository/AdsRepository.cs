@@ -36,7 +36,7 @@ namespace Ads.Repository
             throw new NotImplementedException();
         }
 
-        public IEnumerable<Ad> GetAds()
+        public List<Ad> GetAds()
         {
             _dbContext.Ads.Load();
             _dbContext.AdCoordinates.Load();
@@ -46,8 +46,7 @@ namespace Ads.Repository
             _dbContext.ColorsOfAnimals.Load();
 
             return _dbContext.Ads
-                .Include(a => a.Coordinates)
-                .ToList();
+                .Include(a => a.Coordinates).ToList();
 
             //return _dbContext.Ads
             //    .Include(a => a.Coordinates)
@@ -67,6 +66,14 @@ namespace Ads.Repository
         public void SendToArchive(Guid adGuid)
         {
             throw new NotImplementedException();
+        }
+
+        public IQueryable<Ad> GetFilteredAds(FilterAdsViewModel filterAdsViewModel)
+        {
+            return _dbContext.Ads.Where(a
+                => filterAdsViewModel.KindOfAnimal.Contains(a.Animal.KindOfAnimalGuid)
+                && filterAdsViewModel.Color.Contains(a.Animal.ColorOfAnimalGuid)
+                && filterAdsViewModel.SexAnimal.Contains(a.Animal.SexAnimal));
         }
     }
 }

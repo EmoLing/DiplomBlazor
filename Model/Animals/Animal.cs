@@ -23,6 +23,10 @@ namespace Model.Ads.Animals
 
         public Animal()
         {
+        }
+
+        public Animal(Ad ad)
+        {
             Guid = Guid.NewGuid();
         }
     }

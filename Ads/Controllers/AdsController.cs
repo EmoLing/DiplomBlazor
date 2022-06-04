@@ -48,9 +48,8 @@ namespace Ads.Controllers
                     Description = adViewModel.Description,
                 };
 
-                var animal = new Animal()
+                var animal = new Animal(ad)
                 {
-                    Ad = ad,
                     AdGuid = ad.Guid,
                     AnimalName = adViewModel.Name,
                     SexAnimal = adViewModel.SexAnimal,
@@ -120,6 +119,13 @@ namespace Ads.Controllers
             {
                 return StatusCode(500, ex.Message);
             }
+        }
+
+        [HttpGet]
+        [Route("filteredads/{filter}")]
+        public async Task<IActionResult> GetFilteredAds(FilterAdsViewModel filterAdsViewModel)
+        {
+            return new OkObjectResult(_adsRepository.GetFilteredAds(filterAdsViewModel));
         }
 
         private void DeleteUserFiles(string userName)
