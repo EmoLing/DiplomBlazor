@@ -7,16 +7,25 @@ services:
       context: .
       dockerfile: Diplom/Dockerfile
 
-  animalmanagement:
-    image: ${DOCKER_REGISTRY-}animalmanagement
+  animals-api:
+    image: ${DOCKER_REGISTRY-}animals-api
     build:
       context: .
       dockerfile: AnimalManagement/Dockerfile
 
 
-  ads:
-    image: ${DOCKER_REGISTRY-}ads
+  ads-api:
+    image: ${DOCKER_REGISTRY-}ads-api
     build:
       context: .
       dockerfile: Ads/Dockerfile
 
+  ads-data:
+    image: mcr.microsoft.com/mssql/server
+    ports:
+      - "1401:1433"
+
+  users-data:
+    image: mcr.microsoft.com/mssql/server
+    ports:
+      - "1402:1433"

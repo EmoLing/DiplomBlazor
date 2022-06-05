@@ -6,18 +6,16 @@ EXPOSE 80
 
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
-COPY ["Diplom/Diplom.csproj", "Diplom/"]
-COPY ["Model/Model.csproj", "Model/"]
-COPY ["Helper/Helper.csproj", "Helper/"]
-RUN dotnet restore "Diplom/Diplom.csproj"
+COPY ["OcelotApiGw/OcelotApiGw.csproj", "OcelotApiGw/"]
+RUN dotnet restore "OcelotApiGw/OcelotApiGw.csproj"
 COPY . .
-WORKDIR "/src/Diplom"
-RUN dotnet build "Diplom.csproj" -c Release -o /app/build
+WORKDIR "/src/OcelotApiGw"
+RUN dotnet build "OcelotApiGw.csproj" -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "Diplom.csproj" -c Release -o /app/publish
+RUN dotnet publish "OcelotApiGw.csproj" -c Release -o /app/publish
 
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "Diplom.dll"]
+ENTRYPOINT ["dotnet", "OcelotApiGw.dll"]

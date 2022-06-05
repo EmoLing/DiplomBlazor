@@ -1,4 +1,5 @@
 ﻿using Helper.Ads.ViewModels;
+using Helper.Images;
 using Microsoft.AspNetCore.Components.Forms;
 using Model.Ads.Animals;
 using System.Security.Claims;
@@ -9,8 +10,8 @@ namespace Diplom.Data
     {
         public async Task<NewAdViewModel> OnInitialized()
         {
-            var colorOfAnimals = await GetRequest<List<ColorOfAnimal>>("https://localhost:7094/api/Animal/colorofanimals");
-            var kindOfAnimals = await GetRequest<List<KindOfAnimal>>("https://localhost:7094/api/Animal/kindofanimals");
+            var colorOfAnimals = await GetRequest<List<ColorOfAnimal>>("http://animals-api/api/Animal/colorofanimals");
+            var kindOfAnimals = await GetRequest<List<KindOfAnimal>>("http://animals-api/api/Animal/kindofanimals");
 
             var adViewModel = new NewAdViewModel()
             {
@@ -20,7 +21,7 @@ namespace Diplom.Data
 
             return await Task.FromResult(adViewModel);
         }
-
+        //"http://ads-api/api/ads/uploadfiles/" + '{' + _user.Identity.Name + '}'
         public async Task<bool> CreateAd(AdViewModel adViewModel, ClaimsPrincipal user)
         {
             if (String.IsNullOrWhiteSpace(adViewModel.Longitude) || String.IsNullOrWhiteSpace(adViewModel.Latitude))
@@ -32,12 +33,27 @@ namespace Diplom.Data
 
             adViewModel.UserGuid = guid;
             adViewModel.UserName = user.Identity.Name;
+            adViewModel.Photo =  ImageHelper.GetImageFromRequest($"{Directory.GetCurrentDirectory()}/files/"
+                + adViewModel.UserName + '/', user.Identity.Name);
 
             using var httpClient = new HttpClient();
             using var result = await httpClient
-                .PostAsJsonAsync("https://localhost:7155/api/Ads/CreateAd", adViewModel);
+                .PostAsJsonAsync("http://ads-api/api/Ads/CreateAd", adViewModel);
+
+            DeleteUserFiles(user.Identity.Name);
 
             return result.StatusCode is System.Net.HttpStatusCode.OK;
+        }
+
+        private void DeleteUserFiles(string userName)
+        {
+            var dirInfo = new DirectoryInfo($"{Directory.GetCurrentDirectory()}/files/{userName}/");
+            if (!dirInfo.Exists)
+                return;
+
+            var userFiles = dirInfo.GetFiles().Where(f => f.Name.Contains(userName));
+            foreach (var file in userFiles)
+                file.Delete();
         }
 
         private async Task<T> GetRequest<T>(string url)

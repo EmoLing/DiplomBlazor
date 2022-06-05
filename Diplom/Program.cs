@@ -10,6 +10,8 @@ using Microsoft.Azure.ServiceBus.Primitives;
 using Radzen;
 using Diplom.RabbitMq;
 
+
+
 string myAllowSpecificOrigins = "_myAllowSpecificOrigins";
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddCors(options =>
@@ -47,6 +49,7 @@ builder.Services.AddScoped<ContextMenuService>();
 
 var app = builder.Build();
 app.UseCors(myAllowSpecificOrigins);
+
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
@@ -54,13 +57,18 @@ if (!app.Environment.IsDevelopment())
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
+//using (var scope = app.Services.CreateScope())
+//{
+//    var db = scope.ServiceProvider.GetRequiredService<UsersContext>();
+//    db.Database.Migrate();
+//}
 
 app.UseHttpsRedirection();
 
 app.UseStaticFiles();
 
 app.UseRouting();
-
+app.MapControllers();
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
 

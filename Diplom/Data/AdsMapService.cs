@@ -11,13 +11,13 @@ namespace Diplom.Data
         {
             //rabbitMqService.SendMessage("Test");
             //return new List<Ad>().AsQueryable();
-            var ads = await GetRequest<List<Ad>>("https://localhost:7155/api/Ads");
+            var ads = await GetRequest<List<Ad>>("http://ads-api/api/Ads");
             return ads.AsQueryable();
         }
 
         public async Task<IQueryable<Ad>> GetFilteredAds(FilterAdsViewModel filter)
         {
-            var ads = await GetRequest<IQueryable<Ad>>($"https://localhost:7155/api/Ads/filteredads/{filter}");
+            var ads = await GetRequest<IQueryable<Ad>>($"http://ads-api/api/Ads/filteredads/{filter}");
             return ads;
         }
 

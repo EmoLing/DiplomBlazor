@@ -115,7 +115,7 @@
                     @if (hasErrors)
                     {
                         <h4 class="mb-4">Manual Upload</h4>
-                        <RadzenUpload @ref="_upload" Auto="false" Multiple="true" Url="@Url()" Change=@(args => OnChange(args, "Manual Upload"))
+                        <RadzenUpload @ref="_upload" Auto="false" Multiple="true" Url="api/download/upload/multiple" Change=@(args => OnChange(args, "Manual Upload"))
                                   Progress=@(args => OnProgress(args, "Manual Upload")) Complete="@OnComplete" class="w-100" />
                         <RadzenButton Text="Upload" Click=@(args => _upload.Upload()) class="d-block mt-4" />
                     }
@@ -189,7 +189,9 @@
 
     private string Url()
     {
-        return _user is null ? String.Empty : "https://localhost:7155/api/ads/uploadfiles/" + '{' + _user.Identity.Name + '}';
+        //NavigationManager.NavigateTo("/api/Download/");
+        return "#";
+        //return _user is null ? String.Empty : "http://ads-api/api/ads/uploadfiles/" + '{' + _user.Identity.Name + '}';
     }
 
     protected override void OnInitialized()

@@ -68,14 +68,12 @@ namespace Ads.Controllers
                     Longitude = AdCoordinates.GetDecimalFromString(adViewModel.Longitude),
                 };
 
-                var imagesHash = ImageHelper.GetImageFromRequest($"{Directory.GetCurrentDirectory()}/files/" 
-                    + adViewModel.UserName + '/', adViewModel.UserName);
-                var images = new List<Image>(imagesHash.Count);
+                //var imagesHash = ImageHelper.GetImageFromRequest($"{Directory.GetCurrentDirectory()}/files/" 
+                //    + adViewModel.UserName + '/', adViewModel.UserName);
+                //var images = new List<Image>(imagesHash.Count);
 
-                foreach (var image in imagesHash)
-                    images.Add(new Image(ad.Guid) { ImageHash = image });
 
-                ad.Photo = images;
+                ad.Photo = adViewModel.Photo.Select(a => new Image(ad.Guid) { ImageHash = a }).ToList();
 
 
                 _adsRepository.CreateAd(ad);

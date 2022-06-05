@@ -7,8 +7,8 @@ namespace Diplom.Data
     {
         public async Task<NewAdViewModel> OnInitialized()
         {
-            var colorOfAnimals = await GetRequest<List<ColorOfAnimal>>("https://localhost:7094/api/Animal/colorofanimals");
-            var kindOfAnimals = await GetRequest<List<KindOfAnimal>>("https://localhost:7094/api/Animal/kindofanimals");
+            var colorOfAnimals = await GetRequest<List<ColorOfAnimal>>("http://animals-api/api/Animal/colorofanimals");
+            var kindOfAnimals = await GetRequest<List<KindOfAnimal>>("http://animals-api/api/Animal/kindofanimals");
 
             var adViewModel = new NewAdViewModel()
             {

@@ -3,7 +3,7 @@
   <PropertyGroup Label="Globals">
     <ProjectVersion>2.1</ProjectVersion>
     <DockerTargetOS>Linux</DockerTargetOS>
-    <ProjectGuid>e7e7ea6f-f368-42a9-a1ac-8a1d4918c891</ProjectGuid>
+    <ProjectGuid>189fb60d-4ab4-44b0-ae3e-894a82f3fe6a</ProjectGuid>
     <DockerLaunchAction>LaunchBrowser</DockerLaunchAction>
     <DockerServiceUrl>{Scheme}://localhost:{ServicePort}</DockerServiceUrl>
     <DockerServiceName>diplom</DockerServiceName>

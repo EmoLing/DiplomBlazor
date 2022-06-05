@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
-using System.Drawing;
-using System.Drawing.Imaging;
+using SixLabors.ImageSharp;
 
 namespace Helper.Images
 {
@@ -50,9 +49,10 @@ namespace Helper.Images
                 stream.BaseStream.CopyTo(ms);
                 return ms;
             }
-                
-            using var bitmap = new Bitmap(Image.FromStream(stream.BaseStream));
-            bitmap.Save(ms, ImageFormat.Png);
+
+
+            var image = Image.Load(stream.BaseStream);
+            image.SaveAsPng(ms);
 
             return ms;
         }
@@ -66,10 +66,10 @@ namespace Helper.Images
             path += "{0}";
             for (int i = 0; i < images.Count; i++)
             {
-                string newPath = String.Format(path, i);
+                string newPath = String.Format(path, i) + ".png";
                 using var ms = new MemoryStream(images[i]);
-                using var image = Image.FromStream(ms);
-                image.Save(newPath + ".png", ImageFormat.Png);
+                using var image = Image.Load(ms);
+                image.SaveAsPng(newPath);
             }
         }
 

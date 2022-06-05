@@ -47,17 +47,20 @@
                                                 <div class="uk-position-relative uk-visible-toggle uk-light" tabindex="-1"
                                                  uk-slider="center: true">
                                                     <ul class="uk-slider-items uk-grid">
-                                                        @foreach (var photo in ad.Photo)
+                                                        @if (ad.Photo is not null)
                                                         {
-                                                            <li class="uk-width-3-4">
-                                                                <div class="uk-panel">
-                                                                    <img src="data:image/jpeg;base64,@(Convert.ToBase64String(photo.ImageHash))" width="900" height="600"
+                                                            @foreach (var photo in ad.Photo)
+                                                            {
+                                                                <li class="uk-width-3-4">
+                                                                    <div class="uk-panel">
+                                                                        <img src="data:image/jpeg;base64,@(Convert.ToBase64String(photo.ImageHash))" width="900" height="600"
                                                                  alt="Слайдер" loading="lazy">
-                                                                    <div class="uk-position-center uk-panel">
-                                                                        <div class="uk-h1"></div>
+                                                                        <div class="uk-position-center uk-panel">
+                                                                            <div class="uk-h1"></div>
+                                                                        </div>
                                                                     </div>
-                                                                </div>
-                                                            </li>
+                                                                </li>
+                                                            }
                                                         }
                                                     </ul>
                                                     <a class="uk-position-center-left uk-position-small uk-hidden-hover"
