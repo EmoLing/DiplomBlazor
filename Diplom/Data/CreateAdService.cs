@@ -10,8 +10,8 @@ namespace Diplom.Data
     {
         public async Task<NewAdViewModel> OnInitialized()
         {
-            var colorOfAnimals = await GetRequest<List<ColorOfAnimal>>("http://animals-api/api/Animal/colorofanimals");
-            var kindOfAnimals = await GetRequest<List<KindOfAnimal>>("http://animals-api/api/Animal/kindofanimals");
+            var colorOfAnimals = await GetRequest<List<ColorOfAnimal>>("http://api-gateway/api/Animal/colorofanimals"); //http://animals-api/api/Animal/colorofanimals
+            var kindOfAnimals = await GetRequest<List<KindOfAnimal>>("http://api-gateway/api/Animal/kindofanimals"); //http://animals-api/api/Animal/kindofanimals
 
             var adViewModel = new NewAdViewModel()
             {
@@ -38,7 +38,7 @@ namespace Diplom.Data
 
             using var httpClient = new HttpClient();
             using var result = await httpClient
-                .PostAsJsonAsync("http://ads-api/api/Ads/CreateAd", adViewModel);
+                .PostAsJsonAsync("http://api-gateway/api/Ads/CreateAd", adViewModel); //http://ads-api/api/Ads/CreateAd
 
             DeleteUserFiles(user.Identity.Name);
 

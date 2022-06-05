@@ -1,7 +1,8 @@
 {
-  "ReRoutes": [
+  "Routes": [
     {
-      "DownstreamPathTemplate": "/api/ads/{everything}",
+      //Ads
+      "DownstreamPathTemplate": "/api/ads",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
@@ -9,11 +10,37 @@
           "Port": 80
         }
       ],
-      "UpstreamPathTemplate": "/api/ads/{everything}",
-      "UpstreamHttpMethod": [ "POST", "PUT", "GET", "DELETE" ]
+      "UpstreamPathTemplate": "/api/ads",
+      "UpstreamHttpMethod": [ "GET" ]
     },
     {
-      "DownstreamPathTemplate": "/api/animals/{everything}",
+      "DownstreamPathTemplate": "/api/ads/CreateAd",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "ads-api",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/api/ads/CreateAd",
+      "UpstreamHttpMethod": [ "POST" ]
+    },
+    {
+      "DownstreamPathTemplate": "/api/ads/filteredads/{filter}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "ads-api",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/api/ads/filteredads/{filter}",
+      "UpstreamHttpMethod": [ "GET" ]
+    },
+
+    //Animals
+    {
+      "DownstreamPathTemplate": "/api/Animal/colorofanimals",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
@@ -21,9 +48,23 @@
           "Port": 80
         }
       ],
-      "UpstreamPathTemplate": "/api/animals/{everything}",
-      "UpstreamHttpMethod": [ "POST", "PUT", "GET" ]
+      "UpstreamPathTemplate": "/api/Animal/colorofanimals",
+      "UpstreamHttpMethod": [ "GET" ]
+    },
+    {
+      "DownstreamPathTemplate": "/api/Animal/kindofanimals",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "animals-api",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/api/Animal/kindofanimals",
+      "UpstreamHttpMethod": [ "GET" ]
     }
   ],
-  "GlobalConfiguration": {}
+  "GlobalConfiguration": {
+    "BaseUrl":  "http://localhost:5020"
+  }
 }

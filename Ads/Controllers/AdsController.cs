@@ -90,37 +90,37 @@ namespace Ads.Controllers
             return Ok();
         }
 
-        [HttpPost()]
-        [Route("uploadfiles/{login}")]
-        public async Task<IActionResult> UploadFiles(string login)
-        {
-            login = login.Trim('{', '}');
-            var files = Request.Form.Files;
-            if (!files.Any())
-                return Problem("Файл не загружен");
+        //[HttpPost()]
+        //[Route("uploadfiles/{login}")]
+        //public async Task<IActionResult> UploadFiles(string login)
+        //{
+        //    login = login.Trim('{', '}');
+        //    var files = Request.Form.Files;
+        //    if (!files.Any())
+        //        return Problem("Файл не загружен");
 
-            try
-            {
-                var dirInfo = new DirectoryInfo($"{Directory.GetCurrentDirectory()}/files/{login}/");
-                if (!dirInfo.Exists)
-                    dirInfo.Create();
+        //    try
+        //    {
+        //        var dirInfo = new DirectoryInfo($"{Directory.GetCurrentDirectory()}/files/{login}/");
+        //        if (!dirInfo.Exists)
+        //            dirInfo.Create();
 
-                for (int i = 0; i < files.Count; i++)
-                {
-                    var fileName = $"{login}_{i}_{files[i].FileName}";
-                    string path = $"{dirInfo.FullName}/{fileName}";
+        //        for (int i = 0; i < files.Count; i++)
+        //        {
+        //            var fileName = $"{login}_{i}_{files[i].FileName}";
+        //            string path = $"{dirInfo.FullName}/{fileName}";
 
-                    using var fileStream = new FileStream(path, FileMode.Create);
-                    await files[i].CopyToAsync(fileStream);
-                }
+        //            using var fileStream = new FileStream(path, FileMode.Create);
+        //            await files[i].CopyToAsync(fileStream);
+        //        }
 
-                return StatusCode(200);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
-        }
+        //        return StatusCode(200);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, ex.Message);
+        //    }
+        //}
 
         [HttpGet]
         [Route("filteredads/{filter}")]

@@ -29,3 +29,9 @@ services:
     image: mcr.microsoft.com/mssql/server
     ports:
       - "1402:1433"
+  api-gateway:
+    image: ${DOCKER_REGISTRY-}api-gateway
+    build:
+      context: .
+      dockerfile: OcelotApiGw/Dockerfile
+
