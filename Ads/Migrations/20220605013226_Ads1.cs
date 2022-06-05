@@ -17,6 +17,7 @@ namespace Ads.Migrations
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     TypeAd = table.Column<int>(type: "int", nullable: false),
+                    UserGuid = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     StatusAd = table.Column<int>(type: "int", nullable: false),
                     DateCreate = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
@@ -31,8 +32,7 @@ namespace Ads.Migrations
                 {
                     Guid = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ColorName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    IsOtherColor = table.Column<bool>(type: "bit", nullable: false),
-                    OtherColorName = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Position = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -45,8 +45,7 @@ namespace Ads.Migrations
                 {
                     Guid = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     KindName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    IsOtherKindName = table.Column<bool>(type: "bit", nullable: false),
-                    OtherKindName = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Position = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -57,38 +56,15 @@ namespace Ads.Migrations
                 name: "AdCoordinates",
                 columns: table => new
                 {
-                    Guid = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     AdGuid = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Latitude = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    Longitude = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
+                    Latitude = table.Column<decimal>(type: "decimal(36,18)", precision: 36, scale: 18, nullable: false),
+                    Longitude = table.Column<decimal>(type: "decimal(36,18)", precision: 36, scale: 18, nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_AdCoordinates", x => x.Guid);
+                    table.PrimaryKey("PK_AdCoordinates", x => x.AdGuid);
                     table.ForeignKey(
                         name: "FK_AdCoordinates_Ads_AdGuid",
-                        column: x => x.AdGuid,
-                        principalTable: "Ads",
-                        principalColumn: "Guid",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Animals",
-                columns: table => new
-                {
-                    Guid = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    AnimalName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    AdGuid = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    KindOfAnimalGuid = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    SexAnimal = table.Column<int>(type: "int", nullable: false),
-                    ColorOfAnimalGuid = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Animals", x => x.Guid);
-                    table.ForeignKey(
-                        name: "FK_Animals_Ads_AdGuid",
                         column: x => x.AdGuid,
                         principalTable: "Ads",
                         principalColumn: "Guid",
@@ -114,17 +90,53 @@ namespace Ads.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.CreateIndex(
-                name: "IX_AdCoordinates_AdGuid",
-                table: "AdCoordinates",
-                column: "AdGuid",
-                unique: true);
+            migrationBuilder.CreateTable(
+                name: "Animals",
+                columns: table => new
+                {
+                    AdGuid = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Guid = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    AnimalName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    KindOfAnimalGuid = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    SexAnimal = table.Column<int>(type: "int", nullable: false),
+                    ColorOfAnimalGuid = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    IsOtherKindOfAnimal = table.Column<bool>(type: "bit", nullable: false),
+                    OtherKindOfAnimal = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    IsOtherColorOfAnimal = table.Column<bool>(type: "bit", nullable: false),
+                    OtherColorOfAnimal = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Animals", x => x.AdGuid);
+                    table.ForeignKey(
+                        name: "FK_Animals_Ads_AdGuid",
+                        column: x => x.AdGuid,
+                        principalTable: "Ads",
+                        principalColumn: "Guid",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Animals_ColorsOfAnimals_ColorOfAnimalGuid",
+                        column: x => x.ColorOfAnimalGuid,
+                        principalTable: "ColorsOfAnimals",
+                        principalColumn: "Guid",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Animals_KindsOfAnimals_KindOfAnimalGuid",
+                        column: x => x.KindOfAnimalGuid,
+                        principalTable: "KindsOfAnimals",
+                        principalColumn: "Guid",
+                        onDelete: ReferentialAction.Cascade);
+                });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Animals_AdGuid",
+                name: "IX_Animals_ColorOfAnimalGuid",
                 table: "Animals",
-                column: "AdGuid",
-                unique: true);
+                column: "ColorOfAnimalGuid");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Animals_KindOfAnimalGuid",
+                table: "Animals",
+                column: "KindOfAnimalGuid");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Images_AdGuid",
@@ -141,10 +153,10 @@ namespace Ads.Migrations
                 name: "Animals");
 
             migrationBuilder.DropTable(
-                name: "ColorsOfAnimals");
+                name: "Images");
 
             migrationBuilder.DropTable(
-                name: "Images");
+                name: "ColorsOfAnimals");
 
             migrationBuilder.DropTable(
                 name: "KindsOfAnimals");

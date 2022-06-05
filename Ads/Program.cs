@@ -1,4 +1,5 @@
 using Ads.DbContexts;
+using Ads.RabbitMq;
 using Ads.Repository;
 using Helper.Database;
 using Microsoft.EntityFrameworkCore;
@@ -21,6 +22,7 @@ builder.Services.AddControllers().AddNewtonsoftJson(options =>
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen();
+//builder.Services.AddHostedService<RabbitMqListener>();
 
 string connectionString = DbHelper.GetTrueConnectionString(builder.Configuration.GetConnectionString("Db")
     , AppDomain.CurrentDomain.BaseDirectory);

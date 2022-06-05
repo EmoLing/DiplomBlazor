@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Ads.Migrations
 {
     [DbContext(typeof(AdContext))]
-    [Migration("20220602010703_Ads10")]
-    partial class Ads10
+    [Migration("20220605013226_Ads1")]
+    partial class Ads1
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -44,6 +44,9 @@ namespace Ads.Migrations
 
                     b.Property<int>("TypeAd")
                         .HasColumnType("int");
+
+                    b.Property<Guid>("UserGuid")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Guid");
 
@@ -77,6 +80,9 @@ namespace Ads.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid>("ColorOfAnimalGuid")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("Guid")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<bool>("IsOtherColorOfAnimal")
@@ -142,22 +148,19 @@ namespace Ads.Migrations
 
             modelBuilder.Entity("Model.Ads.Image", b =>
                 {
-                    b.Property<Guid>("AdGuid")
+                    b.Property<Guid>("Guid")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("AdGuid1")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("Guid")
+                    b.Property<Guid>("AdGuid")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<byte[]>("ImageHash")
                         .HasColumnType("varbinary(max)");
 
-                    b.HasKey("AdGuid");
+                    b.HasKey("Guid");
 
-                    b.HasIndex("AdGuid1");
+                    b.HasIndex("AdGuid");
 
                     b.ToTable("Images");
                 });
@@ -200,7 +203,7 @@ namespace Ads.Migrations
                 {
                     b.HasOne("Model.Ads.Ad", "Ad")
                         .WithMany("Photo")
-                        .HasForeignKey("AdGuid1")
+                        .HasForeignKey("AdGuid")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

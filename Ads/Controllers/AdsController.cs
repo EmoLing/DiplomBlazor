@@ -1,4 +1,5 @@
-﻿using Ads.Repository;
+﻿using Ads.RabbitMq;
+using Ads.Repository;
 using Helper.Ads.ViewModels;
 using Helper.Images;
 using Microsoft.AspNetCore.Mvc;
@@ -13,9 +14,11 @@ namespace Ads.Controllers
     public class AdsController : ControllerBase
     {
         private readonly IAdsRepository _adsRepository;
+        private readonly RabbitMqListener _rabbitMqListener;
         public AdsController(IAdsRepository adsRepository)
         {
             _adsRepository = adsRepository;
+            //_rabbitMqListener = new RabbitMqListener();
         }
 
         // GET: api/<AdsController>

@@ -1,0 +1,22 @@
+version: '3.4'
+
+services:
+  diplom:
+    image: ${DOCKER_REGISTRY-}diplom
+    build:
+      context: .
+      dockerfile: Diplom/Dockerfile
+
+  animalmanagement:
+    image: ${DOCKER_REGISTRY-}animalmanagement
+    build:
+      context: .
+      dockerfile: AnimalManagement/Dockerfile
+
+
+  ads:
+    image: ${DOCKER_REGISTRY-}ads
+    build:
+      context: .
+      dockerfile: Ads/Dockerfile
+

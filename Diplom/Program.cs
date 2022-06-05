@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Diplom.Areas.Identity.Data;
 using Microsoft.Azure.ServiceBus.Primitives;
 using Radzen;
+using Diplom.RabbitMq;
 
 string myAllowSpecificOrigins = "_myAllowSpecificOrigins";
 var builder = WebApplication.CreateBuilder(args);
@@ -35,8 +36,8 @@ builder.Services.AddServerSideBlazor();
 builder.Services.AddSingleton<FilterAdsService>();
 builder.Services.AddSingleton<CreateAdService>();
 builder.Services.AddSingleton<WeatherForecastService>();
-builder.Services.AddSingleton<IUserIdProvider, NameUserIdProvider>();
 
+//builder.Services.AddScoped<IRabbitMqService, RabbitMqService>();
 builder.Services.AddScoped<AdsMapService>();
 builder.Services.AddScoped<DialogService>();
 builder.Services.AddScoped<NotificationService>();
