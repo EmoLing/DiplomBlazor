@@ -2,11 +2,13 @@
 
 @using Diplom.Data
 @using System.Dynamic;
+@using ViewModels.Ads
 
 @inject IJSRuntime JSRuntime
 @inject AdsMapService AdsService
 @inject DialogService DialogService
 @inject Microsoft.AspNetCore.Hosting.IWebHostEnvironment HostEnvironment
+@inject IHttpClientFactory Factory
 
 <section>
     <div class="uk-container uk-container-xlarge">
@@ -37,9 +39,9 @@
                             var ad = _ads[i];
 
                             <li data-kind-of-animal="@GetIconKindOfAnimal(ad.Animal.KindOfAnimalGuid)"
-                            data-latitude="@ad.Coordinates.Latitude.ToString().Replace(',', '.')"
-                            data-longitude="@ad.Coordinates.Longitude.ToString().Replace(',', '.')"
-                            data-id="@ad.Guid">
+                            data-latitude="@ad.AdCoordinates.Latitude.ToString().Replace(',', '.')"
+                            data-longitude="@ad.AdCoordinates.Longitude.ToString().Replace(',', '.')"
+                            data-id="@ad.Ad.Guid">
                                 <div class="uk-card uk-card-default uk-width-1-1@m">
                                     <div class="uk-card-header">
                                         <div class="uk-grid-small uk-flex-middle" uk-grid>
@@ -47,9 +49,9 @@
                                                 <div class="uk-position-relative uk-visible-toggle uk-light" tabindex="-1"
                                                  uk-slider="center: true">
                                                     <ul class="uk-slider-items uk-grid">
-                                                        @if (ad.Photo is not null)
+                                                        @if (ad.Images is not null)
                                                         {
-                                                            @foreach (var photo in ad.Photo)
+                                                            @foreach (var photo in ad.Images)
                                                             {
                                                                 <li class="uk-width-3-4">
                                                                     <div class="uk-panel">
@@ -70,16 +72,16 @@
                                                 </div>
                                             </div>
                                             <div class="uk-width-expand">
-                                                <h3 class="uk-card-title uk-margin-remove-bottom">@ad.Name</h3>
+                                                <h3 class="uk-card-title uk-margin-remove-bottom">@ad.Ad.Name</h3>
                                                 <p class="uk-text-meta uk-margin-remove-top">
-                                                    <time datetime="2019-10-12T19:00">@ad.DateCreate</time>
+                                                    <time datetime="2019-10-12T19:00">@ad.Ad.DateCreate</time>
                                                 </p>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="uk-card-body">
                                         <p>
-                                            @ad.Description
+                                            @ad.Ad.Description
                                         </p>
                                     </div>
                                     <div class="uk-card-footer">
@@ -90,7 +92,7 @@
                                                 </button>
                                             </div>
                                             <div class="uk-card uk-card-default uk-card-body uk-margin-left">
-                                                <button @onclick="() => FocusPlacemarket(ad.Coordinates)" data-id="@i" class="uk-button uk-button-text">Показать на карте</button>
+                                                <button @onclick="() => FocusPlacemarket(ad.AdCoordinates)" data-id="@i" class="uk-button uk-button-text">Показать на карте</button>
                                             </div>
                                         </div>
                                     </div>
@@ -112,8 +114,8 @@
 </section>
 
 @code {
-    List<Ad> _ads = new List<Ad>();
-    IQueryable<Ad> _queryAds;
+    List<AdsViewModel> _ads = new List<AdsViewModel>();
+    IQueryable<AdsViewModel> _queryAds;
     private bool _haveFilter = false;
     private int _countmap = 0;
     private bool _needShowMap = false;
@@ -124,7 +126,7 @@
     [JSInvokable]
     public async void GetHelloMessage(Guid adGuid)
     {
-        var ad = _ads.FirstOrDefault(a => a.Guid == adGuid);
+        var ad = _ads.FirstOrDefault(a => a.Ad.Guid == adGuid);
         if (ad is null)
             return;
 
@@ -134,7 +136,7 @@
     protected override async Task OnInitializedAsync()
     {
         _needShowMap = true;
-        _queryAds = await AdsService.GetAds();
+        _queryAds = await AdsService.GetAds(Factory);
         _ads.AddRange(_queryAds);
     }
 
@@ -170,7 +172,7 @@
         await JSRuntime.InvokeVoidAsync("YMapsMathods.adsMap.setPlaceHolders");
     }
 
-    private async void FocusPlacemarket(AdCoordinates coordinates)
+    private async void FocusPlacemarket(Model.Coordinates.AdCoordinates coordinates)
     {
         needRender = false;
         await JSRuntime.InvokeVoidAsync("YMapsMathods.getView", coordinates.Latitude, coordinates.Longitude);
@@ -209,9 +211,9 @@
                 => (!filter.DisableKind ? filter.KindOfAnimal.Contains(a.Animal.KindOfAnimalGuid) : true)
                 && (!filter.DisableColor ? filter.Color.Contains(a.Animal.ColorOfAnimalGuid) : true)
                 && (!filter.DisableSex ? filter.SexAnimal.Contains(a.Animal.SexAnimal) : true)
-                && (!filter.DisableTypeAd ? filter.TypeAd.Contains(a.TypeAd) : true));
+                && (!filter.DisableTypeAd ? filter.TypeAd.Contains(a.Ad.TypeAd) : true));
 
-            _ads = filteredAds.Any() ? filteredAds.ToList() : new List<Ad>();
+            _ads = filteredAds.Any() ? filteredAds.ToList() : new List<AdsViewModel>();
 
             _haveFilter = true;
         });
@@ -239,7 +241,7 @@
     private async Task RefreshAds()
     {
         _ads.Clear();
-        _queryAds = await AdsService.GetAds();
+        _queryAds = await AdsService.GetAds(Factory);
         _ads.AddRange(_queryAds);
 
         _haveFilter = false;
@@ -249,7 +251,7 @@
         StateHasChanged();
     }
 
-    public async Task OpenOrder(Ad ad)
+    public async Task OpenOrder(AdsViewModel ad)
     {
         await DialogService.OpenAsync<AdDialogInfo>("Test",
                new Dictionary<string, object>() { { "Ad", ad } },

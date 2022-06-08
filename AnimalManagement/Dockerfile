@@ -8,6 +8,7 @@ FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
 COPY ["AnimalManagement/AnimalManagement.csproj", "AnimalManagement/"]
 COPY ["Model/Model.csproj", "Model/"]
+COPY ["ViewModel/ViewModel.csproj", "ViewModel/"]
 COPY ["Helper/Helper.csproj", "Helper/"]
 RUN dotnet restore "AnimalManagement/AnimalManagement.csproj"
 COPY . .

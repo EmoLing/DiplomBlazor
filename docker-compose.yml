@@ -12,13 +12,30 @@ services:
     build:
       context: .
       dockerfile: AnimalManagement/Dockerfile
+      
+  #ads-api:
+  #  image: ${DOCKER_REGISTRY-}ads-api
+  #  build:
+  #    context: .
+  #    dockerfile: Ads/Dockerfile
 
-
-  ads-api:
-    image: ${DOCKER_REGISTRY-}ads-api
+  coordinates-api:
+    image: ${DOCKER_REGISTRY-}coordinates-api
     build:
       context: .
-      dockerfile: Ads/Dockerfile
+      dockerfile: Coordinates/Dockerfile
+      
+  clientads-api:
+    image: ${DOCKER_REGISTRY-}clientads-api
+    build:
+      context: .
+      dockerfile: ClientAds/Dockerfile
+      
+  images-api:
+    image: ${DOCKER_REGISTRY-}images-api
+    build:
+      context: .
+      dockerfile: Images/Dockerfile
 
   ads-data:
     image: mcr.microsoft.com/mssql/server
@@ -29,9 +46,26 @@ services:
     image: mcr.microsoft.com/mssql/server
     ports:
       - "1402:1433"
+
+  animals-data:
+    image: mcr.microsoft.com/mssql/server
+    ports:
+      - "1403:1433"
+
+  coordinates-data:
+    image: mcr.microsoft.com/mssql/server
+    ports:
+      - "1404:1433"
+
+  images-data:
+    image: mcr.microsoft.com/mssql/server
+    ports:
+      - "1405:1433"
+
   api-gateway:
     image: ${DOCKER_REGISTRY-}api-gateway
     build:
       context: .
       dockerfile: OcelotApiGw/Dockerfile
+
 

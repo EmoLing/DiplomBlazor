@@ -1,5 +1,5 @@
 ﻿using Helper.Ads.ViewModels;
-using Model.Ads.Animals;
+using Model.Animals;
 
 namespace AnimalManagement.Repository
 {

@@ -14,8 +14,6 @@ namespace Diplom.RabbitMq
 
         public void SendMessage(string message)
         {
-            // Не забудьте вынести значения "localhost" и "MyQueue"
-            // в файл конфигурации
             var factory = new ConnectionFactory()
             {
                 HostName = "localhost",

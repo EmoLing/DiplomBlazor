@@ -1,43 +1,106 @@
 {
   "Routes": [
-    {
-      //Ads
-      "DownstreamPathTemplate": "/api/ads",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "ads-api",
-          "Port": 80
-        }
-      ],
-      "UpstreamPathTemplate": "/api/ads",
-      "UpstreamHttpMethod": [ "GET" ]
-    },
-    {
-      "DownstreamPathTemplate": "/api/ads/CreateAd",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "ads-api",
-          "Port": 80
-        }
-      ],
-      "UpstreamPathTemplate": "/api/ads/CreateAd",
-      "UpstreamHttpMethod": [ "POST" ]
-    },
-    {
-      "DownstreamPathTemplate": "/api/ads/filteredads/{filter}",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "ads-api",
-          "Port": 80
-        }
-      ],
-      "UpstreamPathTemplate": "/api/ads/filteredads/{filter}",
-      "UpstreamHttpMethod": [ "GET" ]
-    },
+    //{
+    //  //Ads
+    //  "DownstreamPathTemplate": "/api/ads",
+    //  "DownstreamScheme": "http",
+    //  "DownstreamHostAndPorts": [
+    //    {
+    //      "Host": "ads-api",
+    //      "Port": 80
+    //    }
+    //  ],
+    //  "UpstreamPathTemplate": "/api/ads",
+    //  "UpstreamHttpMethod": [ "GET" ]
+    //},
+    //{
+    //  "DownstreamPathTemplate": "/api/ads/CreateAd",
+    //  "DownstreamScheme": "http",
+    //  "DownstreamHostAndPorts": [
+    //    {
+    //      "Host": "ads-api",
+    //      "Port": 80
+    //    }
+    //  ],
+    //  "UpstreamPathTemplate": "/api/ads/CreateAd",
+    //  "UpstreamHttpMethod": [ "POST" ]
+    //},
+    //{
+    //  "DownstreamPathTemplate": "/api/ads/filteredads/{filter}",
+    //  "DownstreamScheme": "http",
+    //  "DownstreamHostAndPorts": [
+    //    {
+    //      "Host": "ads-api",
+    //      "Port": 80
+    //    }
+    //  ],
+    //  "UpstreamPathTemplate": "/api/ads/filteredads/{filter}",
+    //  "UpstreamHttpMethod": [ "GET" ]
+    //},
 
+    //ClientAds
+    {
+      "DownstreamPathTemplate": "/api/clientads/",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "clientads-api",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/api/clientads/",
+      "UpstreamHttpMethod": [ "GET", "POST" ]
+    },
+    {
+      "DownstreamPathTemplate": "/api/clientads/{guid}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "clientads-api",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/api/clientads/{guid}",
+      "UpstreamHttpMethod": [ "GET" ]
+    },
+    //coordinates
+    {
+      "DownstreamPathTemplate": "/api/coordinates/",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "coordinates-api",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/api/coordinates/",
+      "UpstreamHttpMethod": [ "GET", "POST" ]
+    },
+    //images
+    {
+      "DownstreamPathTemplate": "/api/images/",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "images-api",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/api/images/",
+      "UpstreamHttpMethod": [ "GET", "POST" ]
+    },
+    {
+      "DownstreamPathTemplate": "/api/images/{guid}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "images-api",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/api/images/{guid}",
+      "UpstreamHttpMethod": [ "GET" ]
+    },
     //Animals
     {
       "DownstreamPathTemplate": "/api/Animal/colorofanimals",
@@ -62,6 +125,18 @@
       ],
       "UpstreamPathTemplate": "/api/Animal/kindofanimals",
       "UpstreamHttpMethod": [ "GET" ]
+    },
+    {
+      "DownstreamPathTemplate": "/api/Animal/",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "animals-api",
+          "Port": 80
+        }
+      ],
+      "UpstreamPathTemplate": "/api/Animal/",
+      "UpstreamHttpMethod": [ "GET", "POST" ]
     }
   ],
   "GlobalConfiguration": {

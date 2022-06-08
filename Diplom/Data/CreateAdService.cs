@@ -1,8 +1,11 @@
 ﻿using Helper.Ads.ViewModels;
 using Helper.Images;
 using Microsoft.AspNetCore.Components.Forms;
-using Model.Ads.Animals;
+using Model.Animals;
 using System.Security.Claims;
+using ViewModels.ClientAds;
+using ViewModels.Coordinates;
+using ViewModels.Images;
 
 namespace Diplom.Data
 {
@@ -36,9 +39,49 @@ namespace Diplom.Data
             adViewModel.Photo =  ImageHelper.GetImageFromRequest($"{Directory.GetCurrentDirectory()}/files/"
                 + adViewModel.UserName + '/', user.Identity.Name);
 
+            var adGuid = Guid.NewGuid();
+
             using var httpClient = new HttpClient();
             using var result = await httpClient
-                .PostAsJsonAsync("http://api-gateway/api/Ads/CreateAd", adViewModel); //http://ads-api/api/Ads/CreateAd
+                .PostAsJsonAsync("http://api-gateway/api/clientads/", new ClientAdsViewModel()
+                {
+                    Guid = adGuid,
+                    Caption = adViewModel.Caption,
+                    Description = adViewModel.Description,
+                    TypeAd = adViewModel.TypeAd,
+                    UserGuid = adViewModel.UserGuid
+                }); //http://ads-api/api/Ads/CreateAd
+
+            using var httpClient2 = new HttpClient();
+            using var result2 = await httpClient
+                .PostAsJsonAsync("http://api-gateway/api/coordinates/", new CoordinatesViewModel()
+                {
+                    Latitude = adViewModel.Latitude,
+                    Longitude = adViewModel.Longitude,
+                    AdGuid = adGuid
+                }); //http://ads-api/api/Ads/CreateAd
+
+            using var httpClient3 = new HttpClient();
+            using var result3 = await httpClient
+                .PostAsJsonAsync("http://api-gateway/api/images/", new ImagesViewModel()
+                {
+                    adGuid = adGuid,
+                    ImagesHash = adViewModel.Photo.ToList()
+                }); //http://ads-api/api/Ads/CreateAd
+
+            using var httpClient4 = new HttpClient();
+            using var result4 = await httpClient
+                .PostAsJsonAsync("http://api-gateway/api/animal/", new Animal(adGuid)
+                {
+                    AnimalName = adViewModel.Name,
+                    ColorOfAnimalGuid = adViewModel.Color,
+                    KindOfAnimalGuid = adViewModel.KindOfAnimal,
+                    IsOtherColorOfAnimal = String.IsNullOrWhiteSpace(adViewModel.OtherColor),
+                    IsOtherKindOfAnimal = String.IsNullOrWhiteSpace(adViewModel.OtherKind),
+                    OtherColorOfAnimal = adViewModel.OtherColor,
+                    OtherKindOfAnimal = adViewModel.OtherKind,
+                    SexAnimal = adViewModel.SexAnimal
+                }); 
 
             DeleteUserFiles(user.Identity.Name);
 

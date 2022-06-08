@@ -5,14 +5,13 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace Model.Ads.Animals
+namespace Model.Animals
 {
     public class Animal
     {
-        public Guid Guid { get; }
-        public string AnimalName { get; set; }
-        public Ad Ad { get; set; }
+        public Guid Guid { get; init; } = Guid.NewGuid();
         public Guid AdGuid { get; set; }
+        public string AnimalName { get; set; }
         public Guid KindOfAnimalGuid { get; set; }
         public SexAnimal SexAnimal { get; set; } = SexAnimal.Undefined;
         public Guid ColorOfAnimalGuid { get; set; }
@@ -25,9 +24,10 @@ namespace Model.Ads.Animals
         {
         }
 
-        public Animal(Ad ad)
+        public Animal(Guid adGuid)
         {
             Guid = Guid.NewGuid();
+            AdGuid = adGuid;
         }
     }
 }

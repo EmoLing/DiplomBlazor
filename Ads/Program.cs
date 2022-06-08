@@ -1,6 +1,4 @@
-using Ads.DbContexts;
 using Ads.RabbitMq;
-using Ads.Repository;
 using Helper.Database;
 using Microsoft.EntityFrameworkCore;
 
@@ -26,10 +24,6 @@ builder.Services.AddSwaggerGen();
 
 string connectionString = DbHelper.GetTrueConnectionString(builder.Configuration.GetConnectionString("Db")
     , AppDomain.CurrentDomain.BaseDirectory);
-
-builder.Services.AddDbContext<AdContext>(o
-    => o.UseSqlServer(connectionString));
-builder.Services.AddTransient<IAdsRepository, AdsRepository>();
 
 var app = builder.Build();
 

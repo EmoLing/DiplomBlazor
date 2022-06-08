@@ -18,7 +18,34 @@ services:
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
 
-  ads-api:
+  #ads-api:
+  #  environment:
+  #    - ASPNETCORE_ENVIRONMENT=Development
+  #    - ASPNETCORE_URLS=http://+:80
+  #  ports:
+  #    - "80"
+  #  volumes:
+  #    - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
+
+  coordinates-api:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+    ports:
+      - "80"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
+
+  clientads-api:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+    ports:
+      - "80"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
+
+  images-api:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:80
@@ -40,6 +67,27 @@ services:
       - ACCEPT_EULA=Y
     ports:
       - "1402:1433"
+
+  animals-data:
+    environment:
+      - SA_PASSWORD=BrRX@6IxL#
+      - ACCEPT_EULA=Y
+    ports:
+      - "1403:1433"
+
+  coordinates-data:
+    environment:
+      - SA_PASSWORD=BrRX@6IxL#
+      - ACCEPT_EULA=Y
+    ports:
+      - "1404:1433"
+
+  images-data:
+    environment:
+      - SA_PASSWORD=BrRX@6IxL#
+      - ACCEPT_EULA=Y
+    ports:
+      - "1405:1433"
 
   api-gateway:
     environment:

@@ -1,6 +1,10 @@
 ﻿using Diplom.RabbitMq;
 using Helper.Ads.ViewModels;
-using Model.Ads;
+using Model.Animals;
+using Model.ClientAds;
+using Model.Coordinates;
+using Model.Images;
+using ViewModels.Ads;
 
 namespace Diplom.Data
 {
@@ -13,11 +17,25 @@ namespace Diplom.Data
         //rabbitMqService.SendMessage("Test"); //пример запрсоа
         //return new List<Ad>().AsQueryable();
         #endregion
-
-        public async Task<IQueryable<Ad>> GetAds()
+        public async Task<IQueryable<AdsViewModel>> GetAds(IHttpClientFactory _httpClientFactory)
         {
-            var ads = await GetRequest<List<Ad>>("http://api-gateway/api/Ads"); //http://ads-api/api/Ads запрос к микросервису
-            return ads.AsQueryable();
+            using var client = _httpClientFactory.CreateClient();
+
+            var images = await client.GetFromJsonAsync<List<Image>>("http://api-gateway/api/images/");
+            var animals = await client.GetFromJsonAsync<List<Animal>>("http://api-gateway/api/animal/");
+            var coordinates = await client.GetFromJsonAsync<List<AdCoordinates>>("http://api-gateway/api/coordinates/");
+            var clientAds = await client.GetFromJsonAsync<List<Ad>>("http://api-gateway/api/clientads/");
+
+            var adsViewModels = new List<AdsViewModel>(clientAds.Count);
+            adsViewModels.AddRange(clientAds.Select(ca => new AdsViewModel() { Ad = ca }));
+            adsViewModels.ForEach(vm =>
+            {
+                vm.Animal = animals.FirstOrDefault(a => a.AdGuid == vm.Ad.Guid);
+                vm.AdCoordinates = coordinates.FirstOrDefault(c => c.AdGuid == vm.Ad.Guid);
+                vm.Images = images.Where(i => i.AdGuid == vm.Ad.Guid).ToList();
+            });
+
+            return adsViewModels.AsQueryable();
         }
 
         public async Task<IQueryable<Ad>> GetFilteredAds(FilterAdsViewModel filter)

@@ -19,14 +19,14 @@
 
     window.YMapsMathods =
     {
-        createAdMap: function () {
+        createAdMap: function() {
 
             ymaps.ready(init);
             function init() {
                 var myPlacemark;
                 var myMap;
                 var location = ymaps.geolocation.get();
-                ymaps.geolocation.get().then(function (res) {
+                ymaps.geolocation.get().then(function(res) {
                     var mapContainer = $('#map'),
                         bounds = res.geoObjects.get(0).properties.get('boundedBy'),
                         // Рассчитываем видимую область для текущей положения пользователя.
@@ -35,7 +35,7 @@
                             [mapContainer.width(), mapContainer.height()]
                         );
                     createMap(mapState);
-                }, function (e) {
+                }, function(e) {
                     // Если местоположение невозможно получить, то просто создаем карту.
                     createMap({
                         center: [55.751574, 37.573856],
@@ -47,7 +47,7 @@
                     myMap = new ymaps.Map('map', state);
 
                     // Слушаем клик на карте.
-                    myMap.events.add('click', function (e) {
+                    myMap.events.add('click', function(e) {
                         var coords = e.get('coords');
 
                         // Если метка уже создана – просто передвигаем ее.
@@ -59,7 +59,7 @@
                             myPlacemark = createPlacemark(coords);
                             myMap.geoObjects.add(myPlacemark);
                             // Слушаем событие окончания перетаскивания на метке.
-                            myPlacemark.events.add('dragend', function () {
+                            myPlacemark.events.add('dragend', function() {
                                 getAddress(myPlacemark.geometry.getCoordinates());
                             });
                         }
@@ -80,7 +80,7 @@
                 // Определяем адрес по координатам (обратное геокодирование).
                 function getAddress(coords) {
                     myPlacemark.properties.set('iconCaption', 'поиск...');
-                    ymaps.geocode(coords).then(function (res) {
+                    ymaps.geocode(coords).then(function(res) {
                         let coordinates = res.metaData.geocoder.request.split(',');
                         var firstGeoObject = res.geoObjects.get(0),
                             address = firstGeoObject.getAddressLine();
@@ -110,17 +110,17 @@
                 }
             }
         },
-        getLongitude: function () {
+        getLongitude: function() {
             let coordinate = latitude + ' | ' + longitude;
             return coordinate;
         },
-        adsMap: function (dotNetHelper) {
+        adsMap: function(dotNetHelper) {
             ymaps.ready(init);
             function init() {
                 var myPlacemark;
                 _dotNetHelper = dotNetHelper;
                 var location = ymaps.geolocation.get();
-                ymaps.geolocation.get().then(function (res) {
+                ymaps.geolocation.get().then(function(res) {
                     var mapContainer = $('#map'),
                         bounds = res.geoObjects.get(0).properties.get('boundedBy'),
                         // Рассчитываем видимую область для текущей положения пользователя.
@@ -129,7 +129,7 @@
                             [mapContainer.width(), mapContainer.height()]
                         );
                     createMap(mapState);
-                }, function (e) {
+                }, function(e) {
                     // Если местоположение невозможно получить, то просто создаем карту.
                     createMap({
                         center: [55.751574, 37.573856],
@@ -140,7 +140,7 @@
                 function createMap(state) {
                     myMap = new ymaps.Map('map', state);
 
-                    $(function () {
+                    $(function() {
                         let objects = [];
                         objectManager = new ymaps.ObjectManager({
                             clusterize: true,
@@ -162,7 +162,7 @@
                         }
                         objectManager.add(objects);
 
-                        objectManager.objects.events.add('click', function (e) {
+                        objectManager.objects.events.add('click', function(e) {
                             var objectId = e.get('objectId');
                             _dotNetHelper.invokeMethodAsync('GetHelloMessage', objectId)
                         });
@@ -188,19 +188,17 @@
                 });
             }
         },
-        getView: function (lat, lon) {
+        getView: function(lat, lon) {
             myMap.setCenter([lat, lon], 20, {
                 checkZoomRange: true
             });
         },
 
-        mapInfo: function (coord) {
+        mapInfo: function(coord) {
             ymaps.ready(init);
             function init() {
-                var myPlacemark;
-                var myMap;
                 var location = ymaps.geolocation.get();
-                ymaps.geolocation.get().then(function (res) {
+                ymaps.geolocation.get().then(function(res) {
                     var mapContainer = $('#map'),
                         bounds = res.geoObjects.get(0).properties.get('boundedBy'),
                         // Рассчитываем видимую область для текущей положения пользователя.
@@ -208,8 +206,8 @@
                             bounds,
                             [mapContainer.width(), mapContainer.height()]
                         );
-                    createMap(mapState);
-                }, function (e) {
+                    createMap(mapState, coord);
+                }, function(e) {
                     // Если местоположение невозможно получить, то просто создаем карту.
                     createMap({
                         center: [55.751574, 37.573856],
@@ -217,33 +215,51 @@
                     });
                 });
 
-                function createMap(state) {
-                    let mapInfo = new ymaps.Map('map', state);
+                function createMap(state, myCoord) {
+                    let myMap = new ymaps.Map('map', state);
+                    //let myPlacemark = new ymaps.Placemark(myCoord, {
+                    //    iconCaption: 'поиск...'
+                    //}, {
+                    //    preset: 'islands#violetDotIconWithCaption',
+                    //    draggable: false
+                    //});
 
-                    mapInfo.geoObjects.add(new ymaps.Placemark(coord, {
-                        balloonContent: 'цвет <strong>воды пляжа бонди</strong>'
-                    }, {
-                        preset: 'islands#icon',
-                        iconColor: '#0095b6'
-                    }));
-                    mapInfo.setCenter(coord, 20, {
+                    myMap.setCenter(coord, 20, {
                         checkZoomRange: true
                     });
+
+                    let myPlacemark = new ymaps.Placemark(myMap.getCenter(), {
+                        hintContent: 'Собственный значок метки',
+                        balloonContent: 'Это красивая метка'
+                    }, {
+                        // Опции.
+                        // Необходимо указать данный тип макета.
+                        iconLayout: 'default#image',
+                        // Своё изображение иконки метки.
+                        iconImageHref: 'images/myIcon.gif',
+                        // Размеры метки.
+                        iconImageSize: [30, 42],
+                        // Смещение левого верхнего угла иконки относительно
+                        // её "ножки" (точки привязки).
+                        iconImageOffset: [-5, -38]
+                    });
+
+                    myMap.geoObjects.add(myPlacemark);
                 }
             }
         },
 
-        setDotNetHelper: function (dot) {
+        setDotNetHelper: function(dot) {
             _dotNetHelper = dot;
         },
 
-        createNewMap: function () {
+        createNewMap: function() {
 
             ymaps.ready(init);
             function init() {
                 var myMap;
                 var location = ymaps.geolocation.get();
-                ymaps.geolocation.get().then(function (res) {
+                ymaps.geolocation.get().then(function(res) {
                     var mapContainer = $('#map'),
                         bounds = res.geoObjects.get(0).properties.get('boundedBy'),
                         // Рассчитываем видимую область для текущей положения пользователя.
@@ -252,7 +268,7 @@
                             [mapContainer.width(), mapContainer.height()]
                         );
                     createMap(mapState);
-                }, function (e) {
+                }, function(e) {
                     // Если местоположение невозможно получить, то просто создаем карту.
                     createMap({
                         center: [55.751574, 37.573856],
@@ -269,11 +285,11 @@
 
     window.UIKitMethods =
     {
-        notification: function (message, status) {
+        notification: function(message, status) {
             UIkit.notification(message, status);
         },
-        dragAndDrop: function () {
-            document.addEventListener("DOMContentLoaded", function (event) {
+        dragAndDrop: function() {
+            document.addEventListener("DOMContentLoaded", function(event) {
 
                 var bar = document.getElementById("js-progressbar");
 
@@ -281,23 +297,23 @@
 
                     url: "/home/SaveFiles",
                     multiple: true,
-                    beforeSend: function () {
+                    beforeSend: function() {
                         console.log("beforeSend", arguments);
                     },
-                    beforeAll: function () {
+                    beforeAll: function() {
                         console.log("beforeAll", arguments);
                     },
-                    load: function () {
+                    load: function() {
                         console.log("load", arguments);
                     },
-                    error: function () {
+                    error: function() {
                         console.log("error", arguments);
                     },
-                    complete: function () {
+                    complete: function() {
                         console.log("complete", arguments);
                     },
 
-                    loadStart: function (e) {
+                    loadStart: function(e) {
                         console.log("loadStart", arguments);
 
                         bar.removeAttribute("hidden");
@@ -305,24 +321,24 @@
                         bar.value = e.loaded;
                     },
 
-                    progress: function (e) {
+                    progress: function(e) {
                         console.log("progress", arguments);
 
                         bar.max = e.total;
                         bar.value = e.loaded;
                     },
 
-                    loadEnd: function (e) {
+                    loadEnd: function(e) {
                         console.log("loadEnd", arguments);
 
                         bar.max = e.total;
                         bar.value = e.loaded;
                     },
 
-                    completeAll: function () {
+                    completeAll: function() {
                         console.log("completeAll", arguments);
 
-                        setTimeout(function () {
+                        setTimeout(function() {
                             bar.setAttribute("hidden", "hidden");
                         }, 1000);
 

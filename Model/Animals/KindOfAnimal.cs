@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Model.Ads.Animals
+namespace Model.Animals
 {
     public class KindOfAnimal
     {

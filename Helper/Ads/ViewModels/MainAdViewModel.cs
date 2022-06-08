@@ -1,5 +1,5 @@
-﻿using Model.Ads.Animals;
-using Model.Ads.Enums;
+﻿using Model.Ads.Enums;
+using Model.Animals;
 using System.ComponentModel.DataAnnotations;
 
 namespace Helper.Ads.ViewModels

@@ -1,4 +1,4 @@
-﻿using Model.Ads.Animals;
+﻿using Model.Animals;
 using Model.Ads.Enums;
 using System;
 using System.Collections.Generic;

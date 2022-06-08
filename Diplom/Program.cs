@@ -14,6 +14,8 @@ using Diplom.RabbitMq;
 
 string myAllowSpecificOrigins = "_myAllowSpecificOrigins";
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddHttpClient();
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("_myAllowSpecificOrigins",
@@ -37,7 +39,6 @@ builder.Services.AddServerSideBlazor();
 
 builder.Services.AddSingleton<FilterAdsService>();
 builder.Services.AddSingleton<CreateAdService>();
-builder.Services.AddSingleton<WeatherForecastService>();
 
 //builder.Services.AddScoped<IRabbitMqService, RabbitMqService>();
 builder.Services.AddScoped<AdsMapService>();

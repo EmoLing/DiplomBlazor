@@ -1,4 +1,5 @@
-﻿@inject Radzen.DialogService dialogService
+﻿@using ViewModels.Ads
+@inject Radzen.DialogService dialogService
 
 <button class="uk-modal-close-full uk-close-large" type="button" uk-close @onclick="@((args) => OnClose())"></button>
 <div class="uk-grid-collapse uk-child-width-1-2@s uk-flex-middle" uk-grid>
@@ -21,7 +22,7 @@
         </div>
     </div>
     <div class="uk-padding-large">
-        <h3>@ad.Name</h3>
+        <h3>@ad.Ad.Name</h3>
         <p>
             На портрете была изображена дама в меховой шляпе и боа,
             она сидела очень прямо и протягивала зрителю тяжелую меховую муфту, в которой целиком исчезала
@@ -37,7 +38,7 @@
 
 
 @code {
-    [Parameter] public Ad ad { get; set; }
+    [Parameter] public AdsViewModel ad { get; set; }
 
     private List<System.IO.FileInfo> images { get; set; }
 
@@ -46,9 +47,9 @@
 
     protected override void OnInitialized()
     {
-        path = $"{Directory.GetCurrentDirectory()}/wwwroot/files/{ad.Guid}/";
+        path = $"{Directory.GetCurrentDirectory()}/wwwroot/files/{ad.Ad.Guid}/";
 
-        ImageHelper.SaveImage(ad.Photo.Select(p => p.ImageHash).ToList(), path);
+        ImageHelper.SaveImage(ad.Images.Select(p => p.ImageHash).ToList(), path);
 
         var dirInfo = new DirectoryInfo(path);
         images = dirInfo.GetFiles().ToList();
@@ -56,7 +57,7 @@
 
         images.ForEach(i =>
         {
-            var pathImage = $"/files/{ad.Guid}/" + i.Name;
+            var pathImage = $"/files/{ad.Ad.Guid}/" + i.Name;
             Images.Add(pathImage);
         });
         base.OnInitialized();

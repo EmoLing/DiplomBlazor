@@ -2,7 +2,7 @@
 using Helper.Ads.ViewModels;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Model.Ads.Animals;
+using Model.Animals;
 
 namespace AnimalManagement.Controllers
 {
@@ -17,7 +17,7 @@ namespace AnimalManagement.Controllers
         }
 
         [HttpGet]
-        public ActionResult Index() => new OkObjectResult(_animalRepository.GetAllAnimals());
+        public List<Animal> Get() => _animalRepository.GetAllAnimals();
 
         [HttpGet]
         [Route("colorofanimals")]
@@ -28,7 +28,6 @@ namespace AnimalManagement.Controllers
         public ActionResult GetKindOfAnimals() => new OkObjectResult(_animalRepository.GetKindOfAnimals());
 
         [HttpPost]
-        [Route("CreateAnimal")]
         public ActionResult CreateAnimal(Animal animal)
         {
             _animalRepository.CreateAnimal(animal);

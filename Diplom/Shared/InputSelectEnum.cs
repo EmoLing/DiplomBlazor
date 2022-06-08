@@ -10,11 +10,8 @@ using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Diplom.Shared
 {
-    // Inherit from InputBase so the hard work is already implemented 😊
-    // Note that adding a constraint on TEnum (where T : Enum) doesn't work when used in the view, Razor raises an error at build time. Also, this would prevent using nullable types...
     public sealed class InputSelectEnum<TEnum> : InputBase<TEnum>
     {
-        // Generate html when the component is rendered.
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
             builder.OpenElement(0, "select");
@@ -23,7 +20,6 @@ namespace Diplom.Shared
             builder.AddAttribute(3, "value", BindConverter.FormatValue(CurrentValueAsString));
             builder.AddAttribute(4, "onchange", EventCallback.Factory.CreateBinder<string>(this, value => CurrentValueAsString = value, CurrentValueAsString, null));
 
-            // Add an option element per enum value
             var enumType = GetEnumType();
             foreach (var value in Enum.GetValues(enumType))
             {

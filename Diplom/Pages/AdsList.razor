@@ -1,10 +1,13 @@
 ﻿@page "/adslist"
 
 @using Diplom.Data
+@using Model.Animals
+@using ViewModels.Ads
 
 @inject AdsMapService AdsService
 @inject FilterAdsService FilterService
 @inject DialogService DialogService
+@inject IHttpClientFactory Factory
 
 <h3>AdsList</h3>
 @if (_ads.Any())
@@ -40,8 +43,8 @@
     </RadzenDataGrid>
 }
 @code {
-    List<Ad> _ads = new List<Ad>();
-    IQueryable<Ad> _queryAds;
+    List<AdsViewModel> _ads = new List<AdsViewModel>();
+    IQueryable<AdsViewModel> _queryAds;
     List<ListAdViewModel> _adsViewModel;
 
     TypeAd? _currentTypeAd;
@@ -53,7 +56,7 @@
     {
         _newAdViewModel = await FilterService.OnInitialized();
 
-        _queryAds = await AdsService.GetAds();
+        _queryAds = await AdsService.GetAds(Factory);
         GetAdViewModels();
         _ads.AddRange(_queryAds);
     }
@@ -67,19 +70,19 @@
             var color = _newAdViewModel.ColorOfAnimals.FirstOrDefault(coa => coa.Guid == ad.Animal.ColorOfAnimalGuid);
             _adsViewModel.Add(new ListAdViewModel()
                 {
-                    Caption = ad.Name,
-                    Description = ad.Description,
-                    Guid = ad.Guid,
-                    UserGuid = ad.UserGuid,
-                    Latitude = ad.Coordinates.Latitude.ToString(),
-                    Longitude = ad.Coordinates.Longitude.ToString(),
-                    TypeAd = ad.TypeAd,
+                    Caption = ad.Ad.Name,
+                    Description = ad.Ad.Description,
+                    Guid = ad.Ad.Guid,
+                    UserGuid = ad.Ad.UserGuid,
+                    Latitude = ad.AdCoordinates.Latitude.ToString(),
+                    Longitude = ad.AdCoordinates.Longitude.ToString(),
+                    TypeAd = ad.Ad.TypeAd,
                     Name = ad.Animal.AnimalName,
                     KindAnimal = kind.KindName,
                     OtherKind = ad.Animal.OtherKindOfAnimal,
                     Color = color.ColorName,
                     OtherColor = ad.Animal.OtherColorOfAnimal,
-                    DateCreate = ad.DateCreate
+                    DateCreate = ad.Ad.DateCreate
                 });
         }
 
@@ -89,11 +92,11 @@
 
     async Task OpenOrder(Guid guid)
     {
-        var ad = _ads.Find(a => a.Guid == guid);
-        await DialogService.OpenAsync<MapInfo>($"Order {ad.Name}",
+        var ad = _ads.Find(a => a.Ad.Guid == guid);
+        await DialogService.OpenAsync<MapInfo>($"Обяъвление {ad.Ad.Name}",
               new Dictionary<string, object>() {
-                  { "Latitude", ad.Coordinates.Latitude.ToString() },
-                  { "Longitude", ad.Coordinates.Longitude.ToString() },
+                  { "Latitude", ad.AdCoordinates.Latitude.ToString() },
+                  { "Longitude", ad.AdCoordinates.Longitude.ToString() },
               },
               new DialogOptions() { Width = "700px", Height = "570px" });
     }

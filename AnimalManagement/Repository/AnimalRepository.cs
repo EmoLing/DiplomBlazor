@@ -1,6 +1,6 @@
 ﻿using AnimalManagement.DbContexts;
 using Helper.Ads.ViewModels;
-using Model.Ads.Animals;
+using Model.Animals;
 
 namespace AnimalManagement.Repository
 {
@@ -14,11 +14,7 @@ namespace AnimalManagement.Repository
 
         public void CreateAnimal(Animal animal)
         {
-            _dbContext.Ads.Attach(animal.Ad);
             _dbContext.Animals.Add(animal);
-            _dbContext.SaveChanges();
-
-            _dbContext.Ads.Remove(animal.Ad);
             _dbContext.SaveChanges();
         }
 
